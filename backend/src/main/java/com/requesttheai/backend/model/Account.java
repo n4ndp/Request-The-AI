@@ -3,42 +3,52 @@ package com.requesttheai.backend.model;
 import com.requesttheai.backend.model.enums.AccountStatus;
 import com.requesttheai.backend.model.enums.UserRole;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "accounts")
-@Getter
-@Setter
+@Table(name = "accounts",
+       uniqueConstraints = @UniqueConstraint(name = "uk_accounts_email", columnNames = "email"))
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Account {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "full_name", nullable = false)
+    @NotBlank
+    @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank @Email
+    @Column(nullable = false, length = 100)
     private String email;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role = UserRole.CUSTOMER;
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    @NotNull
+    private UserRole role = UserRole.USER;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
     private AccountStatus status = AccountStatus.ACTIVE;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
+    @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @CreationTimestamp
