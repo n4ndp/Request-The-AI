@@ -9,13 +9,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-    @GetMapping("/me")
-    public String getAuthenticatedUser() {
-        return "Authenticated user details";
-    }
+    // @GetMapping("/me")
+    // para traer la información de la cuenta del usuario autenticado
 
-    @GetMapping
-    public String getAllUsers() {
-        return "List of all users";
-    }
+    // @GetMapping
+    // para traer la información de todos los usuarios
 }
