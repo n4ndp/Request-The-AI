@@ -17,6 +17,8 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
+    // This service is responsible for generating and validating JWT tokens.
+    // It uses the secret key and expiration time defined in the application properties.
 
     @Value("${jwt.secret-key}")
     private String secretKey;
