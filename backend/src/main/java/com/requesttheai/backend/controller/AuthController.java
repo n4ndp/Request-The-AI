@@ -10,7 +10,7 @@ import com.requesttheai.backend.dto.RegisterRequest;
 import com.requesttheai.backend.service.AuthenticationService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     
