@@ -17,8 +17,6 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
-    // This service is responsible for generating and validating JWT tokens.
-    // It uses the secret key and expiration time defined in the application properties.
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -26,14 +24,14 @@ public class JwtService {
     @Value("${jwt.expiration-ms}")
     private long expirationMs;
 
-    public String getToken(UserDetails user) {
-        return getToken(new HashMap<>(), user);
+    public String getToken(UserDetails userDetails) {
+        return getToken(new HashMap<>(), userDetails);
     }
 
-    public String getToken(HashMap<String, Object> ExtraClaims, UserDetails user) {
+    public String getToken(HashMap<String, Object> ExtraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .claims(ExtraClaims)
-                .subject(user.getUsername())
+                .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getKey())

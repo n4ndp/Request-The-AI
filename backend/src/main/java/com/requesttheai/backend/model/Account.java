@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Account {
-    // This class represents a user's account in the system, including details like full name, email, role, status, and balance.
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,8 +50,6 @@ public class Account {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-    // The user field is a one-to-one relationship with the User entity.
-    // It represents the user associated with this account.
 
     @CreationTimestamp
     @Column(name = "registered_at", updatable = false)

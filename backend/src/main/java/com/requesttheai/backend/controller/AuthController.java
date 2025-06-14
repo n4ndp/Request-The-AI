@@ -13,6 +13,7 @@ import com.requesttheai.backend.service.AuthenticationService;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    
     private final AuthenticationService authService;
 
     @PostMapping(value = "/login")

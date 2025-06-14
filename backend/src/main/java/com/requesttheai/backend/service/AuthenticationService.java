@@ -5,6 +5,7 @@ import com.requesttheai.backend.dto.LoginRequest;
 import com.requesttheai.backend.dto.RegisterRequest;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.User;
+import com.requesttheai.backend.model.enums.UserRole;
 import com.requesttheai.backend.repository.AccountRepository;
 import com.requesttheai.backend.repository.UserRepository;
 
@@ -23,9 +24,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    // This service handles user authentication and registration.
-    // It uses UserRepository to manage user data, AccountRepository for account details,
-    // JwtService for generating JWT tokens, and PasswordEncoder for encoding passwords.
 
     private final UserRepository userRepository;
 
@@ -36,14 +34,13 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
-    // The AuthenticationManager is used to authenticate users based on their credentials.
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
         UserDetails userDetails = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + request.getUsername()));
 
         String token = jwtService.getToken(userDetails);
         return AuthResponse.builder()
@@ -51,8 +48,6 @@ public class AuthenticationService {
                 .role(((User) userDetails).getAccount().getRole())
                 .build();
     }
-    // The login method authenticates the user using the provided username and password.
-    // If authentication is successful, it retrieves the user details and generates a JWT token.
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -71,6 +66,7 @@ public class AuthenticationService {
         Account account = Account.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
+                .role(UserRole.USER)
                 .user(user)
                 .build();
 
@@ -82,8 +78,4 @@ public class AuthenticationService {
                 .role(account.getRole())
                 .build();
     }
-    // The register method creates a new user and account based on the provided registration request.
-    // If the registration is successful, it generates a JWT token for the new user.
-    // The @Transactional annotation ensures that the entire registration process is atomic,
-    // meaning that if any part of the process fails, all changes are rolled back to maintain data integrity.
 }
