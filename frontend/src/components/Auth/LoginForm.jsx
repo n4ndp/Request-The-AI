@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FaUser, FaLock } from 'react-icons/fa';
-import { authService } from '../../services/authService';
+import authService from '../../services/authService';
 
 export default function LoginForm() {
     const [formData, setFormData] = useState({
@@ -10,16 +10,15 @@ export default function LoginForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Datos de login:', formData);
         try {
             const { token, role } = await authService.login({
                 username: formData.username,
                 password: formData.password
             });
             console.log('Login exitoso. Token:', token, 'Rol:', role);
-            // A futuro: almacenar el token y redirigir al usuario
+            // A futuro: redirigir al usuario
         } catch (error) {
-            alert(error.message);
+            console.error(error.message);
         }
     };
 

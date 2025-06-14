@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FaUser, FaLock, FaEnvelope, FaIdCard } from 'react-icons/fa';
-import { authService } from '../../services/authService';
+import authService from '../../services/authService';
 
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
@@ -12,13 +12,12 @@ export default function RegisterForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Datos de registro:', formData);
         try {
             const { token, role } = await authService.register(formData);
             console.log('Registro exitoso. Token:', token, 'Rol:', role);
-            // A futuro: almacenar el token y redirigir al usuario
+            // A futuro: redirigir al usuario
         } catch (error) {
-            alert(error.message);
+            console.error(error.message);
         }
     };
 

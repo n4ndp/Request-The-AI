@@ -1,26 +1,12 @@
-import axios from 'axios';
+import httpClient from './api/httpClient';
 
-const apiClient = axios.create({
-    baseURL: '/api',
-    timeout: 10000,
-    headers: {
-        'Content-Type': 'application/json',
-    }
-});
-
-apiClient.interceptors.request.use(config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
-export const authService = {
+const authService = {
     login: async (credentials) => {
         try {
-            const response = await apiClient.post('/auth/login', credentials);
-            console.log('Login response:', response.data);
+            const response = await httpClient.post('/auth/login', credentials);
+            if (response.data.token) {
+                sessionStorage.setItem('token', response.data.token);
+            }
             return response.data;
         } catch (error) {
             throw new Error(error.response?.data?.message || 'Login failed');
@@ -29,11 +15,16 @@ export const authService = {
 
     register: async (userData) => {
         try {
-            const response = await apiClient.post('/auth/register', userData);
-            console.log('Registration response:', response.data);
+            const response = await httpClient.post('/auth/register', userData);
             return response.data;
         } catch (error) {
             throw new Error(error.response?.data?.message || 'Registration failed');
         }
+    },
+
+    logout: () => {
+        sessionStorage.removeItem('token');
     }
 };
+
+export default authService;
