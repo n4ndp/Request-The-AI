@@ -39,13 +39,13 @@ public class AuthenticationService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        UserDetails userDetails = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsernameWithAccount(request.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + request.getUsername()));
 
-        String token = jwtService.getToken(userDetails);
+        String token = jwtService.getToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .role(((User) userDetails).getAccount().getRole())
+                .role(user.getAccount().getRole())
                 .build();
     }
 

@@ -25,7 +25,4 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByStatusAndRole(AccountStatus status, UserRole role);
 
     List<Account> findByRegisteredAtBetween(LocalDateTime start, LocalDateTime end);
-
-    @Query("SELECT a FROM Account a JOIN FETCH a.user")
-    List<Account> findAllWithUser();
 }
