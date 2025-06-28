@@ -43,7 +43,7 @@ public class Account {
     @Builder.Default
     private AccountStatus status = AccountStatus.ACTIVE;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(nullable = false, precision = 7, scale = 2)
     @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 
@@ -51,7 +51,8 @@ public class Account {
     @Column(name = "registered_at", updatable = false)
     private LocalDateTime registeredAt;
 
+    @NotNull
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

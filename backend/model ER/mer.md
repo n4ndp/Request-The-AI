@@ -72,13 +72,14 @@ La tabla **`Transaction`** es teórica (no Transaction.java) y se utilizaría pa
 
 ### **Usage**:
 
-La tabla **`Usage`** registra cuántos **tokens** se han utilizado en cada mensaje. Está asociada a **`Message`** (a través de `messageId`) y a **`Model`** (a través de `modelId`) para saber cuántos tokens se consumieron y qué modelo se utilizó en ese mensaje.
+La tabla **`Usage`** registra cuántos **tokens** se han utilizado en cada mensaje. Está asociada a **`Message`** (a través de `messageId`) para saber cuántos tokens se consumieron y qué modelo se utilizó en ese mensaje.
 
 * **Campos**:
 
   * `id` (PK)
   * `tokens` (cantidad de tokens utilizados)
   * `messageId` (FK a `Message`)
+  * `userId` (FK a `User`)
 
 ### **Recharge**:
 
