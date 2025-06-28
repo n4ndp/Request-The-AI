@@ -1,17 +1,19 @@
 package com.requesttheai.backend.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.requesttheai.backend.dto.DeleteUserResponse;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.User;
 import com.requesttheai.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
