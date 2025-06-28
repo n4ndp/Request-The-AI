@@ -1,5 +1,6 @@
 package com.requesttheai.backend.service;
 
+import com.requesttheai.backend.dto.DeleteUserResponse;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.User;
@@ -43,5 +44,19 @@ public class UserService {
             .balance(account.getBalance())
             .registeredAt(account.getRegisteredAt())
             .build();
+    }
+
+    @Transactional
+    public DeleteUserResponse deleteUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        
+        userRepository.delete(user);
+        
+        return DeleteUserResponse.builder()
+                .status("success")
+                .message("User deleted successfully")
+                .username(username)
+                .build();
     }
 }

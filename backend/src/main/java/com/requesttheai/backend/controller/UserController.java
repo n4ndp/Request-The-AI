@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import com.requesttheai.backend.dto.DeleteUserResponse;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.service.UserService;
 
@@ -32,5 +33,13 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserProfileResponse>> getAllUserProfiles() {
         return ResponseEntity.ok(userService.getAllUserProfiles());
+    }
+
+    @DeleteMapping("/delete/{username}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<DeleteUserResponse> deleteUser(@PathVariable String username) {
+        return ResponseEntity.ok(
+            userService.deleteUserByUsername(username)
+        );
     }
 }
