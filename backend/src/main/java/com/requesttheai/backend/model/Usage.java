@@ -19,8 +19,12 @@ public class Usage {
     private Long id;
 
     @NotNull
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    @Column(name = "real_amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal realAmount;
+
+    @NotNull
+    @Column(name = "platform_revenue", nullable = false, precision = 19, scale = 2)
+    private BigDecimal platformRevenue;
 
     @NotNull
     @Column(nullable = false)

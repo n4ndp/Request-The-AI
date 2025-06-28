@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class UserService {
     public List<UserProfileResponse> getAllUserProfiles() {
         return userRepository.findAllWithAccount().stream()
             .map(this::toProfileResponse)
-            .toList();
+            .collect(Collectors.toList());
     }
 
     private UserProfileResponse toProfileResponse(User user) {

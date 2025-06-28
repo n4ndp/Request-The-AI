@@ -1,6 +1,7 @@
 package com.requesttheai.backend.dto;
 
-import com.requesttheai.backend.model.enums.UserRole;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
-    private String token;
-    private UserRole role;
+public class RechargeResponse {
+    private Long transactionId;
+    private BigDecimal amount;
+    private LocalDateTime timestamp;
 }

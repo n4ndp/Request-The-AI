@@ -6,6 +6,8 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
 @Table(name = "recharges")
 @Getter @Setter
@@ -22,7 +24,7 @@ public class Recharge {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @NotNull
+    @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime timestamp;
 

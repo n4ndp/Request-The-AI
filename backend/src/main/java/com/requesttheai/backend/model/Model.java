@@ -22,6 +22,9 @@ public class Model {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(name = "profit_margin", nullable = false, precision = 5, scale = 2)
+    private BigDecimal profitMargin;
+
     @NotNull
     @Column(name = "price_input", nullable = false, precision = 7, scale = 2)
     private BigDecimal priceInput;
