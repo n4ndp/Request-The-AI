@@ -1,0 +1,31 @@
+.dashboard-page {
+    background-color: var(--dark);
+    color: var(--light);
+    min-height: 100vh;
+}
+
+.sidebar-col {
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+}
+
+.content-col {
+    margin-left: 16.666667%;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.modal-header {
+    background-color: var(--primary);
+    color: var(--lighter);
+}
+
+.modal-footer button {
+    font-weight: bold;
+}
+
+.modal-body {
+    background-color: var(--darker);
+    color: var(--light);
+}

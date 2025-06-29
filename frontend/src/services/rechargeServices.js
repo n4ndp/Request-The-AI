@@ -1,4 +1,4 @@
-import httpClient from './httpClient';
+import httpClient from './api/httpClient';
 
 const rechargeService = {
     rechargeBalance: async (amount) => {

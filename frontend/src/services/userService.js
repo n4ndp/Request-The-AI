@@ -1,4 +1,4 @@
-import httpClient from './httpClient';
+import httpClient from './api/httpClient';
 
 const userService = {
     getCurrentUserProfile: async () => {

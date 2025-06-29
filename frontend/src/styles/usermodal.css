@@ -1,0 +1,87 @@
+.user-modal {
+    color: var(--light);
+}
+
+.user-modal .modal-content {
+    background-color: var(--darker);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+    color: var(--lighter);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: space-between;
+}
+
+.form-label {
+    color: var(--light);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--lighter);
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary);
+    color: var(--lighter);
+    box-shadow: 0 0 0 0.25rem rgba(55, 51, 179, 0.25);
+}
+
+.form-control[readonly] {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.edit-btn {
+    background-color: var(--yellow);
+    border-color: var(--yellow);
+    color: var(--dark);
+    font-weight: 500;
+}
+
+.edit-btn:hover {
+    background-color: #fbc02d;
+    border-color: #fbc02d;
+}
+
+.save-btn {
+    background-color: var(--green);
+    border-color: var(--green);
+    font-weight: 500;
+}
+
+.save-btn:hover {
+    background-color: #388e3c;
+    border-color: #388e3c;
+}
+
+.close-btn {
+    background-color: var(--gray);
+    border-color: var(--gray);
+    font-weight: 500;
+}
+
+.close-btn:hover {
+    background-color: #757575;
+    border-color: #757575;
+}
