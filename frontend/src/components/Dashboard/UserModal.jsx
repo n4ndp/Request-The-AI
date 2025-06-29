@@ -22,7 +22,6 @@ const UserModal = ({ show, onHide }) => {
     const [success, setSuccess] = useState('');
 
     useEffect(() => {
-        console.log('xd', show);
         const loadUserProfile = async () => {
             try {
                 const profile = await userService.getCurrentUserProfile();
