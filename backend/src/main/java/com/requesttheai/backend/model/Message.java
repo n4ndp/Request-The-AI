@@ -1,14 +1,36 @@
 package com.requesttheai.backend.model;
 
-import com.requesttheai.backend.model.enums.MessageType;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.requesttheai.backend.model.enums.MessageType;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
-@Table(name = "messages")
+@Table(name = "messages",
+    indexes = {
+        @Index(name = "idx_messages_created_at", columnList = "created_at")
+    })
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,12 +46,13 @@ public class Message {
     private String content;
 
     @NotNull
-    @Column(name = "is_from", nullable = false)
-    private MessageType isFrom;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false, length = 10)
+    private MessageType messageType;
 
-    @NotNull
-    @Column(nullable = false)
-    private LocalDateTime timestamp;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.requesttheai.backend.dto.RechargeHistoryResponse;
 import com.requesttheai.backend.dto.RechargeRequest;
 import com.requesttheai.backend.dto.RechargeResponse;
 import com.requesttheai.backend.service.RechargeService;
@@ -34,8 +35,8 @@ public class RechargeController {
     }
 
     @GetMapping("/history")
-    @PreAuthorize("hasAnyAuthority('USER')")
-    public ResponseEntity<List<RechargeResponse>> getRechargeHistory(@AuthenticationPrincipal UserDetails userDetails) {
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<List<RechargeHistoryResponse>> getRechargeHistory(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(
             rechargeService.getRechargeHistory(userDetails.getUsername())
         );

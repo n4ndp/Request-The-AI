@@ -44,7 +44,7 @@ public class UserService {
             .fullName(account.getFullName())
             .email(account.getEmail())
             .balance(account.getBalance())
-            .registeredAt(account.getRegisteredAt())
+            .registeredAt(account.getCreatedAt())
             .build();
     }
 

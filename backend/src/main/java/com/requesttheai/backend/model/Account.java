@@ -1,58 +1,90 @@
-    package com.requesttheai.backend.model;
+package com.requesttheai.backend.model;
 
-    import com.requesttheai.backend.model.enums.AccountStatus;
-    import com.requesttheai.backend.model.enums.UserRole;
-    import jakarta.persistence.*;
-    import jakarta.validation.constraints.Email;
-    import jakarta.validation.constraints.NotBlank;
-    import jakarta.validation.constraints.NotNull;
-    import lombok.*;
-    import org.hibernate.annotations.CreationTimestamp;
-    import java.math.BigDecimal;
-    import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-    @Entity
-    @Table(name = "accounts",
-        uniqueConstraints = @UniqueConstraint(name = "uk_accounts_email", columnNames = "email"))
-    @Getter @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public class Account {
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+import com.requesttheai.backend.model.enums.AccountStatus;
+import com.requesttheai.backend.model.enums.UserRole;
 
-        @NotBlank
-        @Column(name = "full_name", nullable = false, length = 100)
-        private String fullName;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-        @NotBlank @Email
-        @Column(nullable = false, length = 100)
-        private String email;
+@Entity
+@Table(name = "accounts",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_accounts_email", columnNames = "email"),
+        @UniqueConstraint(name = "uk_accounts_user", columnNames = "user_id")
+    })
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Account {
 
-        @Enumerated(EnumType.STRING)
-        @Column(nullable = false, length = 20)
-        @Builder.Default
-        @NotNull
-        private UserRole role = UserRole.USER;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-        @Enumerated(EnumType.STRING)
-        @Column(nullable = false, length = 20)
-        @Builder.Default
-        private AccountStatus status = AccountStatus.ACTIVE;
+    @NotBlank
+    @Size(max = 100)
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
-        @Column(nullable = false, precision = 7, scale = 2)
-        @Builder.Default
-        private BigDecimal balance = BigDecimal.ZERO;
+    @NotBlank
+    @Email
+    @Size(max = 100)
+    @Column(nullable = false)
+    private String email;
 
-        @CreationTimestamp
-        @Column(name = "registered_at", updatable = false)
-        private LocalDateTime registeredAt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    @NotNull
+    private UserRole role = UserRole.USER;
 
-        @NotNull
-        @OneToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "user_id", nullable = false)
-        private User user;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private AccountStatus status = AccountStatus.ACTIVE;
+
+    @DecimalMin("0.00")
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @NotNull
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}

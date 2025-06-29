@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RechargeResponse {
+public class RechargeHistoryResponse {
     private Long transactionId;
-    private BigDecimal balance;
+    private BigDecimal amount;
     private LocalDateTime timestamp;
     private TransactionStatus status;
 }
