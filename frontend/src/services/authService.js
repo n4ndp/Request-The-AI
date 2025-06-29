@@ -5,7 +5,7 @@ const authService = {
         try {
             const response = await httpClient.post('/auth/login', credentials);
             if (response.data.token) {
-                sessionStorage.setItem('token', response.data.token);
+                localStorage.setItem('token', response.data.token);
             }
             return response.data;
         } catch (error) {
@@ -23,7 +23,7 @@ const authService = {
     },
 
     logout: () => {
-        sessionStorage.removeItem('token');
+        localStorage.removeItem('token');
     }
 };
 

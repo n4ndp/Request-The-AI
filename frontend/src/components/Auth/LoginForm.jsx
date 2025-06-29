@@ -31,7 +31,6 @@ const LoginForm = () => {
                 password: formData.password
             });
             console.log('Login exitoso. Token:', token, 'Rol:', role);
-            localStorage.setItem('token', token);
             // A futuro: redirigir al usuario
         } catch (err) {
             setError(err.response?.data?.message || 'Error al iniciar sesión');
