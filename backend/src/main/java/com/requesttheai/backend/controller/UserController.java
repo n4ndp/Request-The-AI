@@ -9,10 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.requesttheai.backend.dto.DeleteUserResponse;
+import com.requesttheai.backend.dto.UpdateProfileRequest;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.service.UserService;
 
@@ -30,6 +33,14 @@ public class UserController {
     public ResponseEntity<UserProfileResponse> getCurrentUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(
             userService.getUserProfile(userDetails.getUsername())
+        );
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<UserProfileResponse> updateProfile(@RequestBody UpdateProfileRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(
+            userService.updateProfile(userDetails.getUsername(), request)
         );
     }
 

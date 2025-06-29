@@ -3,14 +3,18 @@ package com.requesttheai.backend.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.requesttheai.backend.dto.DeleteUserResponse;
+import com.requesttheai.backend.dto.UpdateProfileRequest;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.User;
+import com.requesttheai.backend.repository.AccountRepository;
 import com.requesttheai.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    private final AccountRepository accountRepository;
 
     @Transactional(readOnly = true)
     public UserProfileResponse getUserProfile(String username) {
@@ -34,6 +40,28 @@ public class UserService {
         return userRepository.findAllWithAccount().stream()
             .map(this::toProfileResponse)
             .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserProfileResponse updateProfile(String username, UpdateProfileRequest request) {
+        User user = userRepository.findByUsernameWithAccount(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        
+        Account account = user.getAccount();
+
+        if (!account.getEmail().equals(request.getEmail())) {
+            if (accountRepository.existsByEmail(request.getEmail())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                    "Email already in use by another account");
+            }
+        }
+
+        account.setFullName(request.getFullName());
+        account.setEmail(request.getEmail());
+        
+        accountRepository.save(account);
+        
+        return toProfileResponse(user);
     }
 
     private UserProfileResponse toProfileResponse(User user) {
