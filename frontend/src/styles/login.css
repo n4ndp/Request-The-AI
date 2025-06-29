@@ -1,0 +1,41 @@
+.login-container {
+    background-color: var(--bg-darker);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-form .form-control {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-lighter);
+}
+
+.login-form .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary);
+    color: var(--text-lighter);
+    box-shadow: 0 0 0 0.25rem rgba(98, 0, 238, 0.25);
+}
+
+.login-form label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+h1 {
+    color: var(--text-lighter);
+    font-weight: 600;
+    font-size: 2rem;
+}

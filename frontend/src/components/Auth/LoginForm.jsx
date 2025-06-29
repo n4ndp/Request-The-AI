@@ -1,66 +1,86 @@
 import { useState } from 'react';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { Form, Button, FloatingLabel, Alert } from 'react-bootstrap';
+import { FaSignInAlt } from 'react-icons/fa';
 import authService from '../../services/authService';
+import { useNavigate } from 'react-router-dom';
 
-export default function LoginForm() {
+const LoginForm = () => {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
     });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError('');
+
         try {
             const { token, role } = await authService.login({
                 username: formData.username,
                 password: formData.password
             });
             console.log('Login exitoso. Token:', token, 'Rol:', role);
+            localStorage.setItem('token', token);
             // A futuro: redirigir al usuario
-        } catch (error) {
-            console.error(error.message);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error al iniciar sesión');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-        <div className="mb-3 input-group">
-            <span className="input-group-text">
-            <FaUser />
-            </span>
-            <input
-            type="text"
-            className="form-control"
-            placeholder="Usuario"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            required
-            />
-        </div>
+        <Form onSubmit={handleSubmit} className="login-form">
+            {error && <Alert variant="danger">{error}</Alert>}
 
-        <div className="mb-4 input-group">
-            <span className="input-group-text">
-            <FaLock />
-            </span>
-            <input
-            type="password"
-            className="form-control"
-            placeholder="Contraseña"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
-            />
-        </div>
+            <FloatingLabel controlId="username" label="Nombre de usuario" className="mb-3">
+                <Form.Control
+                    type="text"
+                    name="username"
+                    placeholder="Nombre de usuario"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                />
+            </FloatingLabel>
 
-        <button type="submit" className="btn btn-primary w-100 py-2 mb-3">
-            Iniciar Sesión
-        </button>
+            <FloatingLabel controlId="password" label="Contraseña" className="mb-4">
+                <Form.Control
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                />
+            </FloatingLabel>
 
-        <div className="text-end">
-            <a href="#" className="text-decoration-none small text-muted">
-            ¿Olvidaste tu contraseña?
-            </a>
-        </div>
-        </form>
+            <Button
+                variant="primary"
+                type="submit"
+                disabled={loading}
+                className="w-100 py-2 fw-bold"
+            >
+                {loading ? 'Cargando...' : (
+                    <>
+                        <FaSignInAlt className="me-2" />
+                        Iniciar sesión
+                    </>
+                )}
+            </Button>
+        </Form>
     );
-}
+};
+
+export default LoginForm;

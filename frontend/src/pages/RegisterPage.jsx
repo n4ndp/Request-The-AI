@@ -1,19 +1,26 @@
+import { Container } from 'react-bootstrap';
 import RegisterForm from '../components/Auth/RegisterForm';
-import '../styles/auth.css';
+import '../styles/register.css';
 
-export default function RegisterPage() {
+const RegisterPage = () => {
 	return (
-		<div className="container d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-			<div className="auth-container col-md-5">
-				<div className="auth-header">
-					<h2>Crea tu cuenta</h2>
-					<p className="text-muted">Regístrate para acceder a todas las funcionalidades</p>
+		<div className="register-page">
+			<Container className="d-flex flex-column align-items-center justify-content-center min-vh-100">
+				<div className="register-container p-4 p-md-5">
+					<h1 className="text-center mb-4">Crear Cuenta</h1>
+					<RegisterForm />
+					<div className="text-center mt-4">
+						<p>
+							¿Ya tienes cuenta?{' '}
+							<a href="/login" className="fw-bold">
+								Inicia sesión
+							</a>
+						</p>
+					</div>
 				</div>
-				<RegisterForm />
-				<div className="auth-footer">
-					¿Ya tienes cuenta? <a href="/login" className="auth-link">Inicia sesión aquí</a>
-				</div>
-			</div>
+			</Container>
 		</div>
 	);
-}
+};
+
+export default RegisterPage;

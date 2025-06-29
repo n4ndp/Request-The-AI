@@ -1,19 +1,26 @@
+import { Container } from 'react-bootstrap';
 import LoginForm from '../components/Auth/LoginForm';
-import '../styles/auth.css';
+import '../styles/login.css';
 
-export default function LoginPage() {
+const LoginPage = () => {
 	return (
-		<div className="container d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-			<div className="auth-container col-md-5">
-				<div className="auth-header">
-					<h2>Inicia Sesión</h2>
-					<p className="text-muted">Accede a tu cuenta para continuar</p>
+		<div className="login-page">
+			<Container className="d-flex flex-column align-items-center justify-content-center min-vh-100">
+				<div className="login-container p-4 p-md-5">
+					<h1 className="text-center mb-4">Request The AI</h1>
+					<LoginForm />
+					<div className="text-center mt-4">
+						<p>
+							¿No tienes cuenta?{' '}
+							<a href="/register" className="fw-bold">
+								Regístrate
+							</a>
+						</p>
+					</div>
 				</div>
-				<LoginForm />
-				<div className="auth-footer">
-					¿No tienes cuenta? <a href="/register" className="auth-link">Regístrate aquí</a>
-				</div>
-			</div>
+			</Container>
 		</div>
 	);
-}
+};
+
+export default LoginPage;
