@@ -16,6 +16,10 @@
     --gray: #9e9e9e;
 }
 
+html {
+    overscroll-behavior: none;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--dark);
@@ -23,6 +27,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    overscroll-behavior: none;
 }
 
 a {
