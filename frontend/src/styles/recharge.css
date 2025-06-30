@@ -1,92 +1,59 @@
 .recharge-container {
+    background-color: var(--dark);
+    min-height: calc(100vh - 2rem);
     padding: 2rem;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+    background-color: rgba(220, 53, 69, 0.15);
     color: var(--light);
+}
+
+.alert-danger {
+    color: #dc3545;
 }
 
 .recharge-history {
-    margin-top: 2rem;
-    background-color: transparent;
-}
-
-.history-table {
-    margin-bottom: 0;
-    background-color: var(--lighter);
+    background-color: var(--primary);
     border-radius: var(--border-radius);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    margin: 0 20rem;
+    margin-top: 5rem;
+    overflow: hidden;
+    box-shadow: 0 0 0 0.25rem rgba(98, 0, 238, 0.25);
 }
 
-.history-table th {
+.table-header th {
     background-color: var(--primary);
     color: var(--lighter);
-    border: 1px solid var(--primary-dark);
-    text-align: center;
-    padding: 1rem;
-    font-weight: bold;
-}
-
-.history-table td {
-    background-color: var(--darker);
-    color: var(--light);
-    border-color: rgba(255, 255, 255, 0.1);
-    vertical-align: middle;
-    text-align: center;
-    padding: 1rem;
-}
-
-.amount {
-    font-weight: bold;
-    color: var(--primary);
-}
-
-.status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.status-text {
-    text-transform: capitalize;
     font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.status.completed {
-    color: var(--green);
-}
-
-.status.pending {
-    color: var(--yellow);
-}
-
-.status.failed {
-    color: var(--red);
-}
-
-.status-icon {
-    font-size: 1.2rem;
-}
-
-.text-success {
-    color: var(--green);
-}
-
-.text-warning {
-    color: var(--yellow);
-}
-
-.text-danger {
-    color: var(--red);
+    border: none;
 }
 
 .no-records {
-    padding: 3rem;
+    padding: 0;
+    background-color: var(--dark);
     color: var(--light);
-    background-color: var(--darker);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-records-icon {
+    color: var(--light);
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
 }
 
 .no-records h5 {
-    color: var(--text-light);
+    color: var(--light);
+    font-weight: 500;
 }

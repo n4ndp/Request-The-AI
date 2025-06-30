@@ -16,17 +16,3 @@
     padding: 2rem;
     min-height: 100vh;
 }
-
-.modal-header {
-    background-color: var(--primary);
-    color: var(--lighter);
-}
-
-.modal-footer button {
-    font-weight: bold;
-}
-
-.modal-body {
-    background-color: var(--darker);
-    color: var(--light);
-}

@@ -1,4 +1,4 @@
-import { Table } from 'react-bootstrap';
+import { Table, Badge } from 'react-bootstrap';
 import { FaMoneyBillWave, FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa';
 
 const RechargeHistory = ({ data }) => {
@@ -17,53 +17,60 @@ const RechargeHistory = ({ data }) => {
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('es-ES', {
             style: 'currency',
-            currency: 'USD'
+            currency: 'USD',
+            minimumFractionDigits: 2
         }).format(amount);
     };
 
-    const getStatusIcon = (status) => {
-        switch (status.toLowerCase()) {
-            case 'success':
-                return <FaCheckCircle className="text-success me-2" />;
-            case 'pending':
-                return <FaClock className="text-warning me-2" />;
-            case 'failed':
-                return <FaTimesCircle className="text-danger me-2" />;
-            default:
-                return null;
-        }
+    const getStatusBadge = (status) => {
+        const statusLower = status.toLowerCase();
+        const variants = {
+            success: { icon: <FaCheckCircle className="me-1" />, bg: 'success-light', text: 'success' },
+            pending: { icon: <FaClock className="me-1" />, bg: 'warning-light', text: 'warning' },
+            failed: { icon: <FaTimesCircle className="me-1" />, bg: 'danger-light', text: 'danger' }
+        };
+        
+        const current = variants[statusLower];
+        
+        return (
+            <Badge bg={current.bg} text={current.text} className="d-flex align-items-center py-2">
+                {current.icon}
+                <span className="text-capitalize">{statusLower}</span>
+            </Badge>
+        );
     };
 
     return (
         <div className="recharge-history">
             {data.length === 0 ? (
                 <div className="no-records text-center py-5">
-                    <FaMoneyBillWave size={48} className="mb-3 text-muted" />
-                    <h5 className="text-muted">No hay recargas registradas</h5>
+                    <FaMoneyBillWave size={48} className="mb-3 no-records-icon" />
+                    <h5>No hay recargas registradas</h5>
                 </div>
             ) : (
-                <Table borderless responsive className="history-table">
+                <Table hover className="history-table">
                     <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th className="text-end">Monto</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
+                        <tr className="table-header">
+                            <th className="text-start">Transacción</th>
+                            <th className="text-start">Monto</th>
+                            <th className="text-start">Fecha</th>
+                            <th className="text-start">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {data.map((recharge) => (
-                            <tr key={recharge.transactionId}>
-                                <td className="transaction-id">#{recharge.transactionId}</td>
-                                <td className="amount text-end">
+                            <tr key={recharge.transactionId} className="table-row">
+                                <td className="col-2 text-start">
+                                    #{recharge.transactionId}
+                                </td>
+                                <td className="col-2 text-start">
                                     {formatCurrency(recharge.amount)}
                                 </td>
-                                <td>{formatDate(recharge.timestamp)}</td>
-                                <td>
-                                    <span className={`status-text ${recharge.status.toLowerCase()}`}>
-                                        {getStatusIcon(recharge.status)}
-                                        {recharge.status}
-                                    </span>
+                                <td className="col-2 text-start">
+                                    {getStatusBadge(recharge.status)}
+                                </td>
+                                <td className="col-4 text-start">
+                                    {formatDate(recharge.timestamp)}
                                 </td>
                             </tr>
                         ))}
