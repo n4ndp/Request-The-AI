@@ -53,8 +53,8 @@ const RechargeHistory = ({ data }) => {
                         <tr className="table-header">
                             <th className="text-start">Transacción</th>
                             <th className="text-start">Monto</th>
-                            <th className="text-start">Fecha</th>
                             <th className="text-start">Estado</th>
+                            <th className="text-start">Fecha</th>
                         </tr>
                     </thead>
                     <tbody>
