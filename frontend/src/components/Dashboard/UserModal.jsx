@@ -95,7 +95,7 @@ const UserModal = ({ show, onHide }) => {
 
     return (
         <Modal show={show} onHide={onHide} size="lg" centered className="user-modal">
-            <Modal.Header closeButton className="modal-header">
+            <Modal.Header className="modal-header">
                 <Modal.Title className="modal-title">
                     <FaEdit className="me-2" />
                     Mi Cuenta
