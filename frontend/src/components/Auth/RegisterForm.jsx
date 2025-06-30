@@ -37,7 +37,6 @@ const RegisterForm = () => {
         try {
             const { confirmPassword, ...userData } = formData;
             const { token, role } = await authService.register(userData);
-            console.log('Registro exitoso. Token:', token, 'Rol:', role);
             navigate('/login');
         } catch (err) {
             setError(err.response?.data?.message || 'Error al registrar usuario');

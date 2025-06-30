@@ -30,7 +30,6 @@ const LoginForm = () => {
                 username: formData.username,
                 password: formData.password
             });
-            console.log('Login exitoso. Token:', token, 'Rol:', role);
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Error al iniciar sesión');
