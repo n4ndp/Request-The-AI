@@ -47,6 +47,9 @@ services:
       - "${FRONTEND_PORT}:80"
     depends_on:
       - backend
+    environment:
+      BACKEND_API_URL: ${BACKEND_API_URL}
+      NGINX_PORT: ${NGINX_PORT}
     restart: unless-stopped
 
 volumes:
