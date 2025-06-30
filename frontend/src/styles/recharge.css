@@ -1,0 +1,92 @@
+.recharge-container {
+    padding: 2rem;
+    color: var(--light);
+}
+
+.recharge-history {
+    margin-top: 2rem;
+    background-color: transparent;
+}
+
+.history-table {
+    margin-bottom: 0;
+    background-color: var(--lighter);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.history-table th {
+    background-color: var(--primary);
+    color: var(--lighter);
+    border: 1px solid var(--primary-dark);
+    text-align: center;
+    padding: 1rem;
+    font-weight: bold;
+}
+
+.history-table td {
+    background-color: var(--darker);
+    color: var(--light);
+    border-color: rgba(255, 255, 255, 0.1);
+    vertical-align: middle;
+    text-align: center;
+    padding: 1rem;
+}
+
+.amount {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.status-text {
+    text-transform: capitalize;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.status.completed {
+    color: var(--green);
+}
+
+.status.pending {
+    color: var(--yellow);
+}
+
+.status.failed {
+    color: var(--red);
+}
+
+.status-icon {
+    font-size: 1.2rem;
+}
+
+.text-success {
+    color: var(--green);
+}
+
+.text-warning {
+    color: var(--yellow);
+}
+
+.text-danger {
+    color: var(--red);
+}
+
+.no-records {
+    padding: 3rem;
+    color: var(--light);
+    background-color: var(--darker);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-records h5 {
+    color: var(--text-light);
+}

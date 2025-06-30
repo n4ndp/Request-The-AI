@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import Sidebar from '../components/Dashboard/Sidebar';
 import UserModal from '../components/Dashboard/UserModal';
+import Recharge from '../components/Dashboard/Recharge/Recharge';
 import '../styles/dashboard.css';
 
 const DashboardPage = () => {
@@ -13,7 +14,7 @@ const DashboardPage = () => {
             case 'main':
                 return <div>Panel Principal</div>;
             case 'recharge':
-                return <div>Historial de Recargas</div>;
+                return <Recharge />;
             default:
                 return <div>Panel Principal</div>;
         }
@@ -23,13 +24,13 @@ const DashboardPage = () => {
         <div className="dashboard-page">
             <Container fluid className="p-0">
                 <Row className="g-0">
-                    <Col xs={2} className="sidebar-col">
+                    <Col className="sidebar-col">
                         <Sidebar
                             setActiveView={setActiveView}
                             setShowUserModal={setShowUserModal}
                         />
                     </Col>
-                    <Col xs={10} className="content-col">
+                    <Col className="content-col">
                         {renderContent()}
                     </Col>
                 </Row>
