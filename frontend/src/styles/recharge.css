@@ -29,7 +29,7 @@
     border-radius: var(--border-radius);
     padding: 0;
     margin: 0 20rem;
-    margin-top: 5rem;
+    margin-top: 2rem;
     overflow: hidden;
     box-shadow: 0 0 0 0.25rem rgba(98, 0, 238, 0.25);
 }
@@ -56,4 +56,12 @@
 .no-records h5 {
     color: var(--light);
     font-weight: 500;
+}
+
+.transaction-id {
+    font-family: 'Roboto Mono', monospace;
+}
+
+.amount {
+    font-weight: bold;
 }

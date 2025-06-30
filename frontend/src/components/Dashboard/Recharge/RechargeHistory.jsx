@@ -60,16 +60,16 @@ const RechargeHistory = ({ data }) => {
                     <tbody>
                         {data.map((recharge) => (
                             <tr key={recharge.transactionId} className="table-row">
-                                <td className="col-2 text-start">
+                                <td className="col-2 text-start transaction-id">
                                     #{recharge.transactionId}
                                 </td>
-                                <td className="col-2 text-start">
+                                <td className="col-2 text-start amount">
                                     {formatCurrency(recharge.amount)}
                                 </td>
-                                <td className="col-2 text-start">
+                                <td className="col-2 text-start status">
                                     {getStatusBadge(recharge.status)}
                                 </td>
-                                <td className="col-4 text-start">
+                                <td className="col-4 text-start timestamp">
                                     {formatDate(recharge.timestamp)}
                                 </td>
                             </tr>
