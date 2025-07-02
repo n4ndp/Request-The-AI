@@ -1,15 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/sidebar.css';
 import { FaRegCommentAlt } from 'react-icons/fa';
-import { FaPlus, FaPowerOff, FaWandMagicSparkles, FaSun, FaTrash, FaAngleLeft, FaDiamond } from 'react-icons/fa6';
+import { FaPlus, FaPowerOff, FaWandMagicSparkles, FaSun, FaTrash, FaAngleLeft, FaDiamond, FaClockRotateLeft, FaChevronDown, FaUser } from 'react-icons/fa6';
+import UserModal from './UserModal';
+import RechargeHistoryModal from './Recharge/RechargeHistoryModal';
+import AddCreditsModal from './Recharge/AddCreditsModal';
 
-const Sidebar = ({ isOpen, setIsOpen, user }) => {
+const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate }) => {
     const navigate = useNavigate();
+    const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [showRechargeHistoryModal, setShowRechargeHistoryModal] = useState(false);
+    const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
+    const [currentUserBalance, setCurrentUserBalance] = useState(user?.balance || 0);
+    const userPanelRef = useRef(null);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login');
+    };
+
+    const toggleUserPanel = () => {
+        setIsUserPanelOpen(!isUserPanelOpen);
+    };
+
+    const handleEditProfile = () => {
+        setShowUserModal(true);
+        setIsUserPanelOpen(false);
+    };
+
+    const handleViewRechargeHistory = () => {
+        setShowRechargeHistoryModal(true);
+        setIsUserPanelOpen(false);
+    };
+
+    const handleAddCredits = () => {
+        setShowAddCreditsModal(true);
+    };
+
+    const handleCreditsAdded = (result) => {
+        // Actualizar el balance local
+        if (result && result.balance !== undefined) {
+            setCurrentUserBalance(result.balance);
+            // Actualizar el balance en el componente padre
+            if (onUserBalanceUpdate) {
+                onUserBalanceUpdate(result.balance);
+            }
+        }
+    };
+
+    const handleLogoutClick = () => {
+        setIsUserPanelOpen(false);
+        handleLogout();
     };
 
     // Determinar el tipo de cuenta basado en el balance
@@ -20,10 +63,9 @@ const Sidebar = ({ isOpen, setIsOpen, user }) => {
     };
 
     // Información del usuario con valores por defecto
-    const userBalance = user?.balance || 0;
     const userInfo = {
         name: user?.fullName || 'User',
-        accountType: getAccountType(userBalance),
+        accountType: getAccountType(currentUserBalance),
     };
 
     // Información de créditos (asumiendo un límite basado en el tipo de cuenta)
@@ -38,7 +80,7 @@ const Sidebar = ({ isOpen, setIsOpen, user }) => {
         };
     };
 
-    const credits = getCreditsInfo(userBalance, userInfo.accountType);
+    const credits = getCreditsInfo(currentUserBalance, userInfo.accountType);
     const creditPercentage = Math.min((credits.remaining / credits.total) * 100, 100);
     const chatHistory = [
         'How to write an impacting...',
@@ -46,18 +88,67 @@ const Sidebar = ({ isOpen, setIsOpen, user }) => {
         'Design inspiration'
     ];
 
+    // Actualizar balance cuando cambie el prop user
+    useEffect(() => {
+        setCurrentUserBalance(user?.balance || 0);
+    }, [user?.balance]);
+
+    // Cerrar panel cuando se hace click fuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (userPanelRef.current && !userPanelRef.current.contains(event.target)) {
+                setIsUserPanelOpen(false);
+            }
+        };
+
+        if (isUserPanelOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isUserPanelOpen]);
+
     return (
         <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
             <button className="collapse-button" onClick={() => setIsOpen(!isOpen)}>
                 <FaAngleLeft style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(180deg)' }} />
             </button>
             <div className="sidebar-top">
-                <div className="user-profile">
-                    <div className="user-avatar"><FaDiamond /></div>
-                    {isOpen && (
-                        <div className="user-info">
-                            <span className="user-name">{userInfo.name}</span>
-                            <span className="account-type">{userInfo.accountType}</span>
+                <div className="user-profile-container" ref={userPanelRef}>
+                    <div 
+                        className={`user-profile ${isUserPanelOpen ? 'active' : ''}`}
+                        onClick={toggleUserPanel}
+                    >
+                        <div className="user-avatar"><FaDiamond /></div>
+                        {isOpen && (
+                            <div className="user-info">
+                                <span className="user-name">{userInfo.name}</span>
+                                <span className="account-type">{userInfo.accountType}</span>
+                            </div>
+                        )}
+                        {isOpen && (
+                            <FaChevronDown 
+                                className={`user-panel-toggle ${isUserPanelOpen ? 'rotated' : ''}`}
+                            />
+                        )}
+                    </div>
+                    
+                    {isOpen && isUserPanelOpen && (
+                        <div className="user-options-panel">
+                            <button className="user-option" onClick={handleEditProfile}>
+                                <FaUser />
+                                <span>Editar Perfil</span>
+                            </button>
+                            <button className="user-option" onClick={handleViewRechargeHistory}>
+                                <FaClockRotateLeft />
+                                <span>Historial de Recargas</span>
+                            </button>
+                            <button className="user-option logout-option" onClick={handleLogoutClick}>
+                                <FaPowerOff />
+                                <span>Cerrar Sesión</span>
+                            </button>
                         </div>
                     )}
                 </div>
@@ -97,9 +188,9 @@ const Sidebar = ({ isOpen, setIsOpen, user }) => {
             
             <div className="sidebar-bottom">
                 <nav className="sidebar-nav">
-                    <a href="#" className="nav-item">
+                    <button onClick={handleAddCredits} className="nav-item nav-button">
                         <FaWandMagicSparkles /> {isOpen && <span>Add more credits</span>}
-                    </a>
+                    </button>
                     <a href="#" className="nav-item">
                         <FaSun /> {isOpen && <span>Explore GPTs</span>}
                     </a>
@@ -107,13 +198,22 @@ const Sidebar = ({ isOpen, setIsOpen, user }) => {
                         <FaTrash /> {isOpen && <span>Clear all conversations</span>}
                     </a>
                 </nav>
-
-                <div className="sidebar-footer">
-                    <button onClick={handleLogout} className="logout-button">
-                        <FaPowerOff /> {isOpen && <span>Log out</span>}
-                    </button>
-                </div>
             </div>
+
+            {/* Modals */}
+            <UserModal 
+                show={showUserModal} 
+                onHide={() => setShowUserModal(false)} 
+            />
+            <RechargeHistoryModal 
+                show={showRechargeHistoryModal} 
+                onHide={() => setShowRechargeHistoryModal(false)} 
+            />
+            <AddCreditsModal 
+                show={showAddCreditsModal} 
+                onHide={() => setShowAddCreditsModal(false)}
+                onCreditsAdded={handleCreditsAdded}
+            />
         </div>
     );
 };

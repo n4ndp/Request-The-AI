@@ -1,4 +1,4 @@
-import { Table, Badge } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
 import { FaMoneyBillWave, FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa';
 
 const RechargeHistory = ({ data }) => {
@@ -25,27 +25,28 @@ const RechargeHistory = ({ data }) => {
     const getStatusBadge = (status) => {
         const statusLower = status.toLowerCase();
         const variants = {
-            success: { icon: <FaCheckCircle className="me-1" />, bg: 'success-light', text: 'success' },
-            pending: { icon: <FaClock className="me-1" />, bg: 'warning-light', text: 'warning' },
-            failed: { icon: <FaTimesCircle className="me-1" />, bg: 'danger-light', text: 'danger' }
+            success: { icon: <FaCheckCircle className="me-1" />, className: 'status-badge-success' },
+            pending: { icon: <FaClock className="me-1" />, className: 'status-badge-warning' },
+            failed: { icon: <FaTimesCircle className="me-1" />, className: 'status-badge-danger' }
         };
         
-        const current = variants[statusLower];
+        const current = variants[statusLower] || variants.pending;
         
         return (
-            <Badge bg={current.bg} text={current.text} className="d-flex align-items-center py-2">
+            <span className={`status-badge ${current.className}`}>
                 {current.icon}
                 <span className="text-capitalize">{statusLower}</span>
-            </Badge>
+            </span>
         );
     };
 
     return (
         <div className="recharge-history">
             {data.length === 0 ? (
-                <div className="no-records text-center py-5">
-                    <FaMoneyBillWave size={48} className="mb-3 no-records-icon" />
+                <div className="no-records text-center">
+                    <FaMoneyBillWave size={48} className="no-records-icon" />
                     <h5>No hay recargas registradas</h5>
+                    <p className="text-muted mb-0">Aún no has realizado ninguna recarga de créditos.</p>
                 </div>
             ) : (
                 <Table hover className="history-table">

@@ -55,3 +55,390 @@
 .amount {
     font-weight: bold;
 }
+
+/* Modal del historial de recargas */
+.recharge-history-modal .modal-content {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    color: #ffffff;
+}
+
+.recharge-history-modal .modal-header {
+    border-bottom: 1px solid #333;
+    background-color: #2a2a2a;
+}
+
+.recharge-history-modal .modal-title {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.recharge-history-modal .modal-body {
+    background-color: #1a1a1a;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.recharge-history-modal .modal-footer {
+    border-top: 1px solid #333;
+    background-color: #2a2a2a;
+}
+
+.recharge-history-container {
+    padding: 0;
+}
+
+.history-summary {
+    padding: 1rem;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.history-summary p {
+    margin: 0;
+    color: #a6a6a6;
+    font-size: 0.9rem;
+}
+
+.history-summary strong {
+    color: #ffffff;
+}
+
+/* Estilos específicos para la tabla en el modal */
+.recharge-history-modal .history-table {
+    background-color: transparent;
+    color: #ffffff;
+    margin-bottom: 0;
+}
+
+.recharge-history-modal .history-table thead {
+    border-bottom: 2px solid #333;
+}
+
+.recharge-history-modal .table-header {
+    background-color: #2a2a2a;
+}
+
+.recharge-history-modal .table-header th {
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    padding: 1rem 0.75rem;
+    background-color: #2a2a2a;
+    border-bottom: 2px solid #333;
+}
+
+.recharge-history-modal .table-row {
+    transition: background-color 0.2s ease;
+}
+
+.recharge-history-modal .table-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.recharge-history-modal .table-row td {
+    color: #ffffff;
+    border: none;
+    border-bottom: 1px solid #333;
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+.recharge-history-modal .table-row:last-child td {
+    border-bottom: none;
+}
+
+.recharge-history-modal .transaction-id {
+    font-family: 'Courier New', monospace;
+    color: #a6a6a6;
+    font-size: 0.9rem;
+}
+
+.recharge-history-modal .amount {
+    font-weight: 600;
+    color: #4caf50;
+}
+
+.recharge-history-modal .timestamp {
+    color: #a6a6a6;
+    font-size: 0.9rem;
+}
+
+/* Status badges personalizados */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    gap: 0.375rem;
+}
+
+.status-badge-success {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-badge-warning {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-badge-danger {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Mejorar el estilo del historial en el modal */
+.recharge-history-modal .recharge-history {
+    background-color: transparent;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.recharge-history-modal .history-table {
+    margin-bottom: 0;
+    background-color: transparent;
+}
+
+.recharge-history-modal .no-records {
+    background-color: transparent;
+    color: #a6a6a6;
+    padding: 3rem 1rem;
+}
+
+.recharge-history-modal .no-records h5 {
+    color: #a6a6a6;
+    margin-top: 1rem;
+    font-weight: 400;
+}
+
+.recharge-history-modal .no-records-icon {
+    color: #666;
+}
+
+/* Forzar estilos para Bootstrap Table en el modal */
+.recharge-history-modal .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: #ffffff;
+    --bs-table-border-color: #333;
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+    color: #ffffff !important;
+    margin-bottom: 0;
+}
+
+.recharge-history-modal .table > :not(caption) > * > * {
+    padding: 1rem 0.75rem;
+    background-color: transparent;
+    border-bottom-width: 1px;
+    box-shadow: none;
+}
+
+.recharge-history-modal .table > thead {
+    vertical-align: bottom;
+}
+
+.recharge-history-modal .table > thead > tr > th {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border-bottom: 2px solid #333 !important;
+    font-weight: 600;
+}
+
+/* Spinner personalizado */
+.recharge-history-modal .spinner-border {
+    color: #4caf50;
+}
+
+/* Botones del modal */
+.recharge-history-modal .close-btn {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #ffffff;
+}
+
+.recharge-history-modal .close-btn:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+/* Modal para agregar créditos */
+.add-credits-modal .modal-content {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    color: #ffffff;
+}
+
+.add-credits-modal .modal-header {
+    border-bottom: 1px solid #333;
+    background-color: #2a2a2a;
+}
+
+.add-credits-modal .modal-title {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.add-credits-modal .modal-body {
+    background-color: #1a1a1a;
+    padding: 2rem;
+}
+
+.add-credits-modal .modal-footer {
+    border-top: 1px solid #333;
+    background-color: #2a2a2a;
+    padding: 1rem 2rem;
+}
+
+.add-credits-modal .form-label {
+    color: #ffffff;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.add-credits-modal .form-text {
+    color: #a6a6a6;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.add-credits-modal .amount-input-group {
+    margin-bottom: 0.5rem;
+}
+
+.add-credits-modal .input-group-text {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-right: none;
+    color: #4caf50;
+    font-weight: 600;
+}
+
+.add-credits-modal .amount-input {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-left: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 0.75rem;
+}
+
+.add-credits-modal .amount-input:focus {
+    background-color: #2a2a2a;
+    border-color: #4caf50;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+.add-credits-modal .amount-input::placeholder {
+    color: #666;
+}
+
+.add-credits-modal .payment-method-section {
+    margin-top: 2rem;
+}
+
+.add-credits-modal .payment-method-display {
+    margin-top: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.add-credits-modal .visa-card {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ffffff;
+    border: 1px solid #444;
+}
+
+.add-credits-modal .visa-logo {
+    font-weight: bold;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    background: linear-gradient(45deg, #ffffff, #e0e0e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.add-credits-modal .card-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    opacity: 0.9;
+}
+
+.add-credits-modal .payment-note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #4caf50;
+}
+
+.add-credits-modal .payment-note small {
+    color: #4caf50;
+    font-weight: 500;
+}
+
+.add-credits-modal .cancel-btn {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+}
+
+.add-credits-modal .cancel-btn:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.add-credits-modal .confirm-btn {
+    background-color: #4caf50;
+    border-color: #4caf50;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    min-width: 140px;
+}
+
+.add-credits-modal .confirm-btn:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
+
+.add-credits-modal .confirm-btn:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    opacity: 0.6;
+}
+
+.add-credits-modal .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Animación para el spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.add-credits-modal .spinner-border {
+    animation: spin 1s linear infinite;
+}

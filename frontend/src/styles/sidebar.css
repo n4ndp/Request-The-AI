@@ -29,15 +29,25 @@
     flex: 0 0 auto;
 }
 
+.user-profile-container {
+    position: relative;
+}
+
 .user-profile {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 0.5rem;
     border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .user-profile:hover {
+    background-color: var(--new-chat-hover);
+}
+
+.user-profile.active {
     background-color: var(--new-chat-hover);
 }
 
@@ -234,4 +244,89 @@
 
 .sidebar.open .collapse-button {
     left: 292px; /* 280px width + 12px padding */
+}
+
+.user-panel-toggle {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.user-panel-toggle.rotated {
+    transform: rotate(180deg);
+}
+
+.user-options-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--new-chat-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-option {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-option:last-child {
+    border-bottom: none;
+}
+
+.user-option:hover {
+    background-color: var(--new-chat-hover);
+}
+
+.user-option.logout-option:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.user-option svg {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.nav-button:focus {
+    outline: none;
+    box-shadow: none;
 }

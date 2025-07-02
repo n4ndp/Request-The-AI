@@ -11,26 +11,36 @@ const Chat = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const fetchUserProfile = async () => {
+        try {
+            const userProfile = await userService.getCurrentUserProfile();
+            setUser(userProfile);
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            // Si hay error, usar datos por defecto
+            setUser({
+                firstName: 'User',
+                lastName: '',
+                email: 'user@example.com',
+                role: 'USER'
+            });
+        }
+    };
+
+    const updateUserBalance = (newBalance) => {
+        setUser(prevUser => ({
+            ...prevUser,
+            balance: newBalance
+        }));
+    };
+
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const userProfile = await userService.getCurrentUserProfile();
-                setUser(userProfile);
-            } catch (error) {
-                console.error('Error fetching user profile:', error);
-                // Si hay error, usar datos por defecto
-                setUser({
-                    firstName: 'User',
-                    lastName: '',
-                    email: 'user@example.com',
-                    role: 'USER'
-                });
-            } finally {
-                setLoading(false);
-            }
+        const loadUserProfile = async () => {
+            await fetchUserProfile();
+            setLoading(false);
         };
 
-        fetchUserProfile();
+        loadUserProfile();
     }, []);
 
     if (loading) {
@@ -43,6 +53,7 @@ const Chat = () => {
                 isOpen={isSidebarOpen} 
                 setIsOpen={setSidebarOpen}
                 user={user}
+                onUserBalanceUpdate={updateUserBalance}
             />
             <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
                 <ChatView 
