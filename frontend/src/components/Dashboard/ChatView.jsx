@@ -7,10 +7,15 @@ import '../../styles/chatview.css';
 
 const ChatView = ({ modelProvider, setModelProvider }) => {
     const [messages, setMessages] = useState([]);
-    const messagesEndRef = useRef(null);
+    const messageListRef = useRef(null);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messageListRef.current) {
+            messageListRef.current.scrollTo({
+                top: messageListRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
     };
 
     useEffect(() => {
@@ -33,7 +38,7 @@ const ChatView = ({ modelProvider, setModelProvider }) => {
     };
 
     return (
-        <div className={`chat-view ${modelProvider}-theme`}>
+        <div className={`chat-view ${modelProvider}-theme ${messages.length > 0 ? 'has-messages' : ''}`}>
             <div className="model-selector-container">
                 <div className="model-selector" onClick={() => setModelProvider(modelProvider === 'openai' ? 'anthropic' : 'openai')}>
                     {modelProvider === 'openai' ? (
@@ -50,7 +55,7 @@ const ChatView = ({ modelProvider, setModelProvider }) => {
                 </div>
             </div>
             
-            <div className="message-list">
+            <div className="message-list" ref={messageListRef}>
                 {messages.length === 0 ? (
                     <div className="welcome-container">
                         <h1 className="welcome-title">
@@ -86,7 +91,6 @@ const ChatView = ({ modelProvider, setModelProvider }) => {
                         {messages.map((msg, index) => (
                             <Message key={index} message={msg} />
                         ))}
-                        <div ref={messagesEndRef} />
                     </>
                 )}
             </div>

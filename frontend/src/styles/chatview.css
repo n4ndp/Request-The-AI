@@ -83,10 +83,10 @@
 }
 
 .model-selector-container {
-    position: absolute;
+    position: fixed;
     top: 1rem;
     right: 1rem;
-    z-index: 10;
+    z-index: 100;
 }
 
 .model-selector {
@@ -118,11 +118,21 @@
 }
 
 .message-list {
-    flex-grow: 1;
+    flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 0;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    scroll-behavior: smooth;
+}
+
+/* Cuando no hay mensajes, centrar el contenido de bienvenida */
+.chat-view:not(.has-messages) .message-list {
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
 .welcome-container {
@@ -135,6 +145,8 @@
     padding: 2rem;
     max-width: 900px;
     margin: 0 auto;
+    z-index: 10;
+    flex-shrink: 0; /* No se encoge */
 }
 
 .welcome-title {
@@ -222,6 +234,54 @@
     max-width: 700px;
     margin: 0 auto;
     padding: 2rem 1rem;
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0; /* No se encoge */
+}
+
+/* Estilos para cuando hay mensajes activos */
+.chat-view.has-messages {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.chat-view.has-messages .message-list {
+    flex: 1;
+    height: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    scroll-behavior: smooth;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.chat-view.has-messages .chat-input-area {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 0;
+    margin: 0;
+    max-width: none;
+    padding: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0; /* No se encoge */
+}
+
+.chat-view.has-messages .chat-input-form {
+    max-width: 700px;
+    width: 100%;
 }
 
 .chat-input-form {

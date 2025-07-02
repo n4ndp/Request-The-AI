@@ -1,45 +1,103 @@
+/* Message container */
 .message-wrapper {
-    padding: 1rem;
-    display: flex;
-}
-
-.ai-message {
-    background-color: #444654;
-}
-
-.user-message {
-    background-color: transparent;
-}
-
-.message-content {
-    max-width: 800px;
-    margin: 0 auto;
-    display: flex;
-    gap: 1rem;
     width: 100%;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0; /* Los mensajes no se encogen */
 }
 
-.message-content p {
-    margin: 0;
-    line-height: 1.6;
-    white-space: pre-wrap; /* To respect newlines in the response */
+.message-wrapper:first-child {
+    padding-top: 4rem; /* Más espacio para que no interfiera con el selector de modelo */
+}
+
+.message-wrapper:last-child {
+    padding-bottom: 1rem;
+}
+
+/* User messages */
+.message-wrapper.user-message {
+    background: transparent;
+}
+
+.user-message-content {
+    width: 100%;
+    max-width: 768px;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.user-message-bubble {
+    background: #4caf50;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    border-bottom-right-radius: 4px;
+    max-width: 70%;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+
+/* AI messages */
+.message-wrapper.ai-message {
+    background: transparent;
+}
+
+.ai-message-content {
+    width: 100%;
+    max-width: 768px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
 }
 
 .ai-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 5px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-size: 1.1rem;
+    color: white;
     flex-shrink: 0;
+    margin-top: 0.25rem;
 }
 
 .openai-icon {
-    background-color: var(--theme-color-primary, #10a37f);
+    background: #4caf50;
 }
 
 .anthropic-icon {
-    background-color: var(--theme-color-primary, #d97706);
+    background: #ff8c00;
+}
+
+.ai-message-text {
+    flex: 1;
+    color: #ffffff;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-wrapper {
+        padding: 1rem;
+    }
+    
+    .user-message-bubble {
+        max-width: 85%;
+    }
+    
+    .ai-message-content,
+    .user-message-content {
+        max-width: 100%;
+    }
 } 
