@@ -1,0 +1,45 @@
+.message-wrapper {
+    padding: 1rem;
+    display: flex;
+}
+
+.ai-message {
+    background-color: #444654;
+}
+
+.user-message {
+    background-color: transparent;
+}
+
+.message-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.message-content p {
+    margin: 0;
+    line-height: 1.6;
+    white-space: pre-wrap; /* To respect newlines in the response */
+}
+
+.ai-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.openai-icon {
+    background-color: var(--theme-color-primary, #10a37f);
+}
+
+.anthropic-icon {
+    background-color: var(--theme-color-primary, #d97706);
+} 

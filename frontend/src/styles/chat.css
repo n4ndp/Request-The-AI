@@ -1,0 +1,44 @@
+/* Basic styles for the chat container */
+.chat-container {
+    display: flex;
+    height: 100vh;
+    background-color: #343541;
+    color: white;
+}
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    /* justify-content: center; */
+    transition: margin-left 0.3s ease;
+}
+
+/* We don't need to adjust margin as the sidebar is not position: absolute */
+/* 
+.main-content.sidebar-open {
+    margin-left: 280px; 
+}
+
+.main-content.sidebar-closed {
+    margin-left: 80px;
+} 
+*/
+
+.chat-view h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* OpenAI Theme (Green) */
+.openai-theme {
+    --theme-color-primary: #10a37f;
+    --theme-color-secondary: #1a7f64;
+}
+
+/* Anthropic Theme (Orange) */
+.anthropic-theme {
+    --theme-color-primary: #d97706; /* A shade of orange */
+    --theme-color-secondary: #b45309;
+} 
