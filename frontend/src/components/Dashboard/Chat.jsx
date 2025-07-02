@@ -2,14 +2,35 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import ChatView from './ChatView';
 import userService from '../../services/userService';
+import modelService from '../../services/modelService';
 import '../../styles/chat.css';
 
 const Chat = () => {
-    // This will eventually come from a state management solution or props
-    const [modelProvider, setModelProvider] = useState('openai'); // 'openai' or 'anthropic'
+    const [models, setModels] = useState([]);
+    const [selectedModel, setSelectedModel] = useState(null);
+    const [modelProvider, setModelProvider] = useState('openai');
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchModels = async () => {
+            try {
+                const fetchedModels = await modelService.getModels();
+                setModels(fetchedModels);
+                if (fetchedModels.length > 0) {
+                    // Set default model
+                    const defaultModel = fetchedModels.find(m => m.provider.toLowerCase() === 'openai') || fetchedModels[0];
+                    setSelectedModel(defaultModel);
+                    setModelProvider(defaultModel.provider.toLowerCase());
+                }
+            } catch (error) {
+                console.error('Error fetching models:', error);
+            }
+        };
+
+        fetchModels();
+    }, []);
 
     const fetchUserProfile = async () => {
         try {
@@ -35,15 +56,22 @@ const Chat = () => {
     };
 
     useEffect(() => {
-        const loadUserProfile = async () => {
+        const loadInitialData = async () => {
+            setLoading(true);
             await fetchUserProfile();
+            // Models are already being fetched in another useEffect
             setLoading(false);
         };
 
-        loadUserProfile();
+        loadInitialData();
     }, []);
+    
+    const handleModelChange = (model) => {
+        setSelectedModel(model);
+        setModelProvider(model.provider.toLowerCase());
+    }
 
-    if (loading) {
+    if (loading && !user) { // Adjusted loading condition
         return <div>Loading...</div>;
     }
 
@@ -57,8 +85,10 @@ const Chat = () => {
             />
             <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
                 <ChatView 
-                    modelProvider={modelProvider} 
-                    setModelProvider={setModelProvider} 
+                    models={models}
+                    selectedModel={selectedModel}
+                    onModelChange={handleModelChange}
+                    modelProvider={modelProvider}
                 />
             </div>
         </div>

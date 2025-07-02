@@ -1,13 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ChatInput from './ChatInput';
 import Message from './Message';
-import { FaBrain, FaUsers, FaRocket } from 'react-icons/fa';
-import { FaWandMagicSparkles } from 'react-icons/fa6';
+import { FaBrain, FaWandMagicSparkles, FaChevronDown } from 'react-icons/fa6';
 import '../../styles/chatview.css';
 
-const ChatView = ({ modelProvider, setModelProvider }) => {
+const ChatView = ({ models, selectedModel, onModelChange, modelProvider }) => {
     const [messages, setMessages] = useState([]);
+    const [isDropdownOpen, setDropdownOpen] = useState(false);
     const messageListRef = useRef(null);
+    const dropdownRef = useRef(null);
+
+    const groupedModels = useMemo(() => {
+        return models.reduce((acc, model) => {
+            const provider = model.provider || 'Unknown';
+            if (!acc[provider]) {
+                acc[provider] = [];
+            }
+            acc[provider].push(model);
+            return acc;
+        }, {});
+    }, [models]);
 
     const scrollToBottom = () => {
         if (messageListRef.current) {
@@ -22,11 +34,24 @@ const ChatView = ({ modelProvider, setModelProvider }) => {
         scrollToBottom();
     }, [messages]);
     
-    const handleModelChange = (e) => {
-        const newProvider = e.target.value.includes('claude') ? 'anthropic' : 'openai';
-        setModelProvider(newProvider);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const handleModelSelect = (model) => {
+        onModelChange(model);
+        setDropdownOpen(false);
     };
-    
+
     const handleSendMessage = (text) => {
         const userMessage = { text, sender: 'user' };
         const aiMessage = { 
@@ -37,54 +62,45 @@ const ChatView = ({ modelProvider, setModelProvider }) => {
         setMessages([...messages, userMessage, aiMessage]);
     };
 
+    const ModelIcon = modelProvider === 'openai' ? FaBrain : FaWandMagicSparkles;
+
     return (
         <div className={`chat-view ${modelProvider}-theme ${messages.length > 0 ? 'has-messages' : ''}`}>
-            <div className="model-selector-container">
-                <div className="model-selector" onClick={() => setModelProvider(modelProvider === 'openai' ? 'anthropic' : 'openai')}>
-                    {modelProvider === 'openai' ? (
-                        <div className="model-button openai">
-                            <FaBrain className="model-icon" />
-                            <span>GPT o4</span>
-                        </div>
-                    ) : (
-                        <div className="model-button anthropic">
-                            <FaWandMagicSparkles className="model-icon" />
-                            <span>3.7 Sonnet</span>
-                        </div>
-                    )}
+            <div className="model-selector-container" ref={dropdownRef}>
+                <div className="model-selector" onClick={() => setDropdownOpen(!isDropdownOpen)}>
+                    <div className={`model-button ${modelProvider}`}>
+                        <ModelIcon className="model-icon" />
+                        <span>{selectedModel ? selectedModel.name : 'Select Model'}</span>
+                        <FaChevronDown className={`chevron-icon ${isDropdownOpen ? 'open' : ''}`} />
+                    </div>
                 </div>
+                {isDropdownOpen && (
+                    <div className="model-dropdown">
+                        {Object.entries(groupedModels).map(([provider, providerModels]) => (
+                            <div key={provider} className="provider-group">
+                                <h5 className="provider-name">{provider}</h5>
+                                {providerModels.map(model => (
+                                    <div 
+                                        key={model.id} 
+                                        className={`model-option ${selectedModel && selectedModel.id === model.id ? 'selected' : ''}`}
+                                        onClick={() => handleModelSelect(model)}
+                                    >
+                                        {model.name}
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             
             <div className="message-list" ref={messageListRef}>
                 {messages.length === 0 ? (
                     <div className="welcome-container">
                         <h1 className="welcome-title">
-                            Welcome to <span className="brand-name">{modelProvider === 'openai' ? 'ChatGPT' : 'Claude'}</span>
+                            Welcome to Request The AI
                         </h1>
                         <p className="welcome-subtitle">The power of AI at your service - Tame the knowledge !</p>
-                        <div className="features-grid">
-                            <div className="feature-item">
-                                <div className="feature-icon">
-                                    <FaBrain />
-                                </div>
-                                <h3 className="feature-title">Clear and precise</h3>
-                                <p className="feature-description">Pariatur sint laborum cillum aute consectetur irure.</p>
-                            </div>
-                            <div className="feature-item">
-                                <div className="feature-icon">
-                                    <FaUsers />
-                                </div>
-                                <h3 className="feature-title">Personalized answers</h3>
-                                <p className="feature-description">Pariatur sint laborum cillum aute consectetur irure.</p>
-                            </div>
-                            <div className="feature-item">
-                                <div className="feature-icon">
-                                    <FaRocket />
-                                </div>
-                                <h3 className="feature-title">Increased efficiency</h3>
-                                <p className="feature-description">Pariatur sint laborum cillum aute consectetur irure.</p>
-                            </div>
-                        </div>
                     </div>
                 ) : (
                     <>
