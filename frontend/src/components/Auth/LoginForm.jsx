@@ -30,7 +30,13 @@ const LoginForm = () => {
                 username: formData.username,
                 password: formData.password
             });
-            navigate('/dashboard');
+            
+            // Redireccionar según el rol
+            if (role === 'ADMIN') {
+                navigate('/admin');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Error al iniciar sesión');
         } finally {
