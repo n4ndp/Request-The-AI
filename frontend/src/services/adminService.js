@@ -21,6 +21,16 @@ const adminService = {
         }
     },
 
+    // Actualizar un usuario existente
+    updateUser: async (username, userData) => {
+        try {
+            const response = await httpClient.put(`/users/${username}`, userData);
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Error al actualizar usuario');
+        }
+    },
+
     // Eliminar un usuario
     deleteUser: async (username) => {
         try {

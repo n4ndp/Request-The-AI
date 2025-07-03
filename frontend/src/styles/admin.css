@@ -52,6 +52,29 @@
     margin-bottom: 1rem;
 }
 
+/* Arreglar el color del texto en los inputs de los modales */
+.modal-create-user .form-control,
+.modal-create-user .form-select {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}
+
+.modal-create-user .form-control:focus,
+.modal-create-user .form-select:focus {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.modal-create-user .form-control::placeholder {
+    color: #6c757d !important;
+}
+
+.modal-create-user .form-floating > label {
+    color: #6c757d !important;
+}
+
 .btn-action {
     margin-right: 0.25rem;
     padding: 0.25rem 0.5rem;

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.requesttheai.backend.dto.CreateUserRequest;
 import com.requesttheai.backend.dto.DeleteUserResponse;
 import com.requesttheai.backend.dto.UpdateProfileRequest;
+import com.requesttheai.backend.dto.UpdateUserByAdminRequest;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.service.UserService;
 
@@ -64,5 +65,11 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserProfileResponse> createUser(@RequestBody CreateUserRequest request) {
         return ResponseEntity.ok(userService.createUser(request));
+    }
+
+    @PutMapping("/{username}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<UserProfileResponse> updateUserByAdmin(@PathVariable String username, @RequestBody UpdateUserByAdminRequest request) {
+        return ResponseEntity.ok(userService.updateUserByAdmin(username, request));
     }
 }

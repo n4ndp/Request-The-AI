@@ -36,7 +36,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(authRequest -> authRequest
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/me").hasAnyAuthority("USER", "ADMIN")
-                .requestMatchers("/api/users").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/users").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/users/*").hasAuthority("ADMIN")
                 .requestMatchers("/api/users/delete/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/recharge/**").hasAnyAuthority("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/models").permitAll()

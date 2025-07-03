@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.requesttheai.backend.dto.CreateUserRequest;
 import com.requesttheai.backend.dto.DeleteUserResponse;
 import com.requesttheai.backend.dto.UpdateProfileRequest;
+import com.requesttheai.backend.dto.UpdateUserByAdminRequest;
 import com.requesttheai.backend.dto.UserProfileResponse;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.User;
@@ -75,6 +76,7 @@ public class UserService {
             .username(user.getUsername())
             .fullName(account.getFullName())
             .email(account.getEmail())
+            .role(account.getRole())
             .balance(account.getBalance())
             .registeredAt(account.getCreatedAt())
             .build();
@@ -119,5 +121,29 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         return toProfileResponse(savedUser);
+    }
+
+    @Transactional
+    public UserProfileResponse updateUserByAdmin(String username, UpdateUserByAdminRequest request) {
+        User user = userRepository.findByUsernameWithAccount(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        
+        Account account = user.getAccount();
+
+        if (!account.getEmail().equals(request.getEmail())) {
+            if (accountRepository.existsByEmail(request.getEmail())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                    "Email already in use by another account");
+            }
+        }
+
+        account.setFullName(request.getFullName());
+        account.setEmail(request.getEmail());
+        account.setRole(request.getRole());
+        account.setBalance(request.getBalance());
+        
+        accountRepository.save(account);
+        
+        return toProfileResponse(user);
     }
 }

@@ -71,7 +71,7 @@ public class Account {
     private AccountStatus status = AccountStatus.ACTIVE;
 
     @DecimalMin("0.00")
-    @Column(nullable = false, precision = 10, scale = 8)
+    @Column(nullable = false, precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 

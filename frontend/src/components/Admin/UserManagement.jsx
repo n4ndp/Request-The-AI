@@ -11,16 +11,25 @@ const UserManagement = () => {
     
     // Modal states
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     
-    // Form data
+    // Form data for create
     const [formData, setFormData] = useState({
         username: '',
         password: '',
         fullName: '',
         email: '',
         role: 'USER'
+    });
+
+    // Form data for edit
+    const [editFormData, setEditFormData] = useState({
+        fullName: '',
+        email: '',
+        role: 'USER',
+        balance: 0
     });
 
     useEffect(() => {
@@ -58,6 +67,25 @@ const UserManagement = () => {
         }
     };
 
+    const handleEditUser = async (e) => {
+        e.preventDefault();
+        try {
+            await adminService.updateUser(selectedUser.username, editFormData);
+            setSuccess('Usuario actualizado exitosamente');
+            setShowEditModal(false);
+            setSelectedUser(null);
+            setEditFormData({
+                fullName: '',
+                email: '',
+                role: 'USER',
+                balance: 0
+            });
+            loadUsers();
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
     const handleDeleteUser = async () => {
         try {
             await adminService.deleteUser(selectedUser.username);
@@ -75,6 +103,33 @@ const UserManagement = () => {
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const handleEditChange = (e) => {
+        let value = e.target.value;
+        if (e.target.name === 'balance') {
+            // Asegurarse de que el balance sea un número decimal válido
+            value = value === '' ? 0 : parseFloat(value);
+            // Si no es un número válido, mantener el valor anterior
+            if (isNaN(value)) {
+                value = editFormData.balance;
+            }
+        }
+        setEditFormData({
+            ...editFormData,
+            [e.target.name]: value
+        });
+    };
+
+    const openEditModal = (user) => {
+        setSelectedUser(user);
+        setEditFormData({
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            balance: parseFloat(user.balance || 0).toFixed(2)
+        });
+        setShowEditModal(true);
     };
 
     const formatDate = (dateString) => {
@@ -131,6 +186,14 @@ const UserManagement = () => {
                                 <td>${user.balance?.toFixed(2) || '0.00'}</td>
                                 <td>{formatDate(user.registeredAt)}</td>
                                 <td>
+                                    <Button
+                                        variant="outline-primary"
+                                        size="sm"
+                                        className="btn-action me-1"
+                                        onClick={() => openEditModal(user)}
+                                    >
+                                        <FaEdit />
+                                    </Button>
                                     <Button
                                         variant="outline-danger"
                                         size="sm"
@@ -219,6 +282,79 @@ const UserManagement = () => {
                         </Button>
                         <Button variant="primary" type="submit">
                             Crear Usuario
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            {/* Modal de editar usuario */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" className="modal-create-user">
+                <Modal.Header closeButton>
+                    <Modal.Title>Editar Usuario: {selectedUser?.username}</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleEditUser}>
+                    <Modal.Body>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <FloatingLabel controlId="editFullName" label="Nombre completo" className="mb-3">
+                                    <Form.Control
+                                        type="text"
+                                        name="fullName"
+                                        value={editFormData.fullName}
+                                        onChange={handleEditChange}
+                                        required
+                                    />
+                                </FloatingLabel>
+                            </div>
+                            <div className="col-md-6">
+                                <FloatingLabel controlId="editEmail" label="Email" className="mb-3">
+                                    <Form.Control
+                                        type="email"
+                                        name="email"
+                                        value={editFormData.email}
+                                        onChange={handleEditChange}
+                                        required
+                                    />
+                                </FloatingLabel>
+                            </div>
+                        </div>
+                        
+                        <div className="row">
+                            <div className="col-md-6">
+                                <FloatingLabel controlId="editRole" label="Rol" className="mb-3">
+                                    <Form.Select
+                                        name="role"
+                                        value={editFormData.role}
+                                        onChange={handleEditChange}
+                                        required
+                                    >
+                                        <option value="USER">Usuario</option>
+                                        <option value="ADMIN">Administrador</option>
+                                    </Form.Select>
+                                </FloatingLabel>
+                            </div>
+                            <div className="col-md-6">
+                                <FloatingLabel controlId="editBalance" label="Balance ($)" className="mb-3">
+                                    <Form.Control
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="999999999"
+                                        name="balance"
+                                        value={editFormData.balance}
+                                        onChange={handleEditChange}
+                                        required
+                                    />
+                                </FloatingLabel>
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+                            Cancelar
+                        </Button>
+                        <Button variant="primary" type="submit">
+                            Actualizar Usuario
                         </Button>
                     </Modal.Footer>
                 </Form>
