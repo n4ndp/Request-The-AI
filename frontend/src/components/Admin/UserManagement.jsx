@@ -108,12 +108,8 @@ const UserManagement = () => {
     const handleEditChange = (e) => {
         let value = e.target.value;
         if (e.target.name === 'balance') {
-            // Asegurarse de que el balance sea un número decimal válido
-            value = value === '' ? 0 : parseFloat(value);
-            // Si no es un número válido, mantener el valor anterior
-            if (isNaN(value)) {
-                value = editFormData.balance;
-            }
+            // No redondear, mantener el valor exacto ingresado por el usuario
+            value = value === '' ? 0 : value;
         }
         setEditFormData({
             ...editFormData,
@@ -127,7 +123,7 @@ const UserManagement = () => {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
-            balance: parseFloat(user.balance || 0).toFixed(2)
+            balance: user.balance || 0
         });
         setShowEditModal(true);
     };
@@ -337,7 +333,6 @@ const UserManagement = () => {
                                 <FloatingLabel controlId="editBalance" label="Balance ($)" className="mb-3">
                                     <Form.Control
                                         type="number"
-                                        step="0.01"
                                         min="0"
                                         max="999999999"
                                         name="balance"

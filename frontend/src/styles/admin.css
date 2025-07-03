@@ -109,4 +109,99 @@
 .admin-stats .lead {
     margin: 0;
     opacity: 0.9;
+}
+
+/* Model Management Styles */
+.model-management {
+    min-height: 600px;
+}
+
+.model-management .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.model-management .table td {
+    vertical-align: middle;
+}
+
+.model-management .badge {
+    font-size: 0.8em;
+    padding: 0.5em 0.75em;
+}
+
+.model-management .btn-group .btn {
+    margin-right: 0.25rem;
+}
+
+.model-management .btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.model-management .modal-lg {
+    max-width: 800px;
+}
+
+.model-management .form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.model-management .text-muted {
+    font-style: italic;
+}
+
+/* Mejorar contraste en inputs del modal - Selectores más específicos */
+.model-management .modal-body .form-control,
+.model-management .modal-body input.form-control,
+.model-management .modal-body textarea.form-control {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #ced4da !important;
+}
+
+.model-management .modal-body .form-control:focus,
+.model-management .modal-body input.form-control:focus,
+.model-management .modal-body textarea.form-control:focus {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.model-management .modal-body .form-control:disabled,
+.model-management .modal-body .form-control[readonly],
+.model-management .modal-body input.form-control:disabled,
+.model-management .modal-body input.form-control[readonly],
+.model-management .modal-body textarea.form-control:disabled,
+.model-management .modal-body textarea.form-control[readonly] {
+    color: #495057 !important;
+    background-color: #e9ecef !important;
+    border-color: #ced4da !important;
+}
+
+.model-management .modal-body .form-control::placeholder,
+.model-management .modal-body input.form-control::placeholder,
+.model-management .modal-body textarea.form-control::placeholder {
+    color: #6c757d !important;
+    opacity: 1 !important;
+}
+
+/* Forzar estilos con selectores específicos de Bootstrap */
+.modal .modal-body .form-control {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}
+
+.modal .modal-body .form-control:focus {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}
+
+.modal .modal-body .form-control:disabled,
+.modal .modal-body .form-control[readonly] {
+    color: #495057 !important;
+    background-color: #e9ecef !important;
 } 

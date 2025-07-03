@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Nav, Alert } from 'react-bootstrap';
-import { FaUsers, FaUserPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaUsers, FaUserPlus, FaEdit, FaTrash, FaCubes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import UserManagement from '../components/Admin/UserManagement';
+import ModelManagement from '../components/Admin/ModelManagement';
 import '../styles/admin.css';
 
 const AdminPage = () => {
@@ -61,6 +62,16 @@ const AdminPage = () => {
                                             Gestión de Usuarios
                                         </Nav.Link>
                                     </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link 
+                                            active={activeTab === 'models'} 
+                                            onClick={() => setActiveTab('models')}
+                                            className="d-flex align-items-center"
+                                        >
+                                            <FaCubes className="me-2" />
+                                            Gestión de Modelos
+                                        </Nav.Link>
+                                    </Nav.Item>
                                 </Nav>
                             </Card.Body>
                         </Card>
@@ -70,6 +81,7 @@ const AdminPage = () => {
                         <Card className="admin-content">
                             <Card.Body>
                                 {activeTab === 'users' && <UserManagement />}
+                                {activeTab === 'models' && <ModelManagement />}
                             </Card.Body>
                         </Card>
                     </Col>
