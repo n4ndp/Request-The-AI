@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +21,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "models",
+@Table(name = "models", 
+       uniqueConstraints = @UniqueConstraint(name = "uk_model_name", columnNames = "name"),
     indexes = {
         @Index(name = "idx_models_provider", columnList = "provider"),
         @Index(name = "idx_models_name", columnList = "name")
@@ -46,12 +48,12 @@ public class Model {
     private BigDecimal profitMargin = BigDecimal.ZERO;
 
     @DecimalMin("0.00")
-    @Column(name = "price_input", nullable = false, precision = 7, scale = 2)
+    @Column(name = "price_input", nullable = false, precision = 19, scale = 8)
     @NotNull
     private BigDecimal priceInput;
 
     @DecimalMin("0.00")
-    @Column(name = "price_output", nullable = false, precision = 7, scale = 2)
+    @Column(name = "price_output", nullable = false, precision = 19, scale = 8)
     @NotNull
     private BigDecimal priceOutput;
 

@@ -47,17 +47,17 @@ public class Usage {
 
     @NotNull
     @DecimalMin("0.00")
-    @Column(name = "real_amount", nullable = false, precision = 19, scale = 2)
+    @Column(name = "real_amount", nullable = false, precision = 19, scale = 8)
     private BigDecimal realAmount;
 
     @NotNull
     @DecimalMin("0.00")
-    @Column(name = "platform_revenue", nullable = false, precision = 19, scale = 2)
+    @Column(name = "platform_revenue", nullable = false, precision = 19, scale = 8)
     private BigDecimal platformRevenue;
 
     @NotNull
     @DecimalMin("0.00")
-    @Column(name="total_amount", nullable = false, precision = 19, scale = 2)
+    @Column(name="total_amount", nullable = false, precision = 19, scale = 8)
     private BigDecimal totalAmount;
 
     @CreationTimestamp

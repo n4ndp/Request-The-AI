@@ -1,5 +1,15 @@
-INSERT INTO models (name, price_input, price_output, provider, description, profit_margin) VALUES
-('GPT-4', 10.00, 20.00, 'OpenAI', 'The most powerful OpenAI model.', 0.00),
-('GPT-3.5 Turbo', 1.00, 2.00, 'OpenAI', 'A fast and affordable model from OpenAI.', 0.00),
-('Claude 3.5 Sonnet', 5.00, 15.00, 'Anthropic', 'The latest and most intelligent model from Anthropic.', 0.00),
-('Claude 3 Haiku', 0.50, 1.50, 'Anthropic', 'The fastest and most compact model from Anthropic for near-instant responsiveness.', 0.00);
+INSERT INTO models (name, price_input, price_output, provider, description, profit_margin) 
+VALUES ('gpt-4.1-mini', 0.00000048, 0.00000012, 'OpenAI', 'Versión ligera de GPT-4.1, ideal para tareas rápidas', 0.20)
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO models (name, price_input, price_output, provider, description, profit_margin) 
+VALUES ('gpt-4o', 0.00000300, 0.00000150, 'OpenAI', 'Modelo multimodal más avanzado (texto, audio, imagen)', 0.20)
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO models (name, price_input, price_output, provider, description, profit_margin) 
+VALUES ('gpt-3.5-turbo', 0.00000060, 0.00000180, 'OpenAI', 'Modelo económico para chats simples', 0.20)
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO models (name, price_input, price_output, provider, description, profit_margin) 
+VALUES ('gpt-4o-mini', 0.00000018, 0.00000009, 'OpenAI', 'Versión compacta de GPT-4o para respuestas rápidas', 0.20)
+ON CONFLICT (name) DO NOTHING;

@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -33,10 +34,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(authRequest -> authRequest
-                .requestMatchers("/api/auth/**", "/api/models/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/me").hasAnyAuthority("USER", "ADMIN")
                 .requestMatchers("/api/users").hasAuthority("ADMIN")
                 .requestMatchers("/api/users/delete/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/recharge/**").hasAnyAuthority("USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/models").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/models/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/models").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/models/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/models/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -51,7 +58,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList("*")); // solo para probar, luego lo quito
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",

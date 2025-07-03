@@ -45,7 +45,7 @@ public class Recharge {
     private Long id;
 
     @DecimalMin("0.01")
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal amount;
 
     @CreationTimestamp

@@ -27,7 +27,7 @@ public class RechargeController {
     private final RechargeService rechargeService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('USER')")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<RechargeResponse> rechargeBalance(@RequestBody RechargeRequest rechargeRequest, @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(
             rechargeService.processRecharge(rechargeRequest, userDetails.getUsername())
