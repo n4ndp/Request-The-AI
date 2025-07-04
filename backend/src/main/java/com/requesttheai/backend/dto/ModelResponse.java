@@ -1,6 +1,7 @@
 package com.requesttheai.backend.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,4 +19,7 @@ public class ModelResponse {
     private BigDecimal priceOutput;
     private String provider;
     private String description;
+    private BigDecimal profitMargin;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

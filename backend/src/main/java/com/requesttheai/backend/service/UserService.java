@@ -69,19 +69,6 @@ public class UserService {
         return toProfileResponse(user);
     }
 
-    private UserProfileResponse toProfileResponse(User user) {
-        Account account = user.getAccount();
-        
-        return UserProfileResponse.builder()
-            .username(user.getUsername())
-            .fullName(account.getFullName())
-            .email(account.getEmail())
-            .role(account.getRole())
-            .balance(account.getBalance())
-            .registeredAt(account.getCreatedAt())
-            .build();
-    }
-
     @Transactional
     public DeleteUserResponse deleteUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
@@ -145,5 +132,18 @@ public class UserService {
         accountRepository.save(account);
         
         return toProfileResponse(user);
+    }
+
+    private UserProfileResponse toProfileResponse(User user) {
+        Account account = user.getAccount();
+        
+        return UserProfileResponse.builder()
+            .username(user.getUsername())
+            .fullName(account.getFullName())
+            .email(account.getEmail())
+            .role(account.getRole())
+            .balance(account.getBalance())
+            .registeredAt(account.getCreatedAt())
+            .build();
     }
 }

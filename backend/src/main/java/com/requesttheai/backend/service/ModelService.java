@@ -27,10 +27,17 @@ public class ModelService {
     }
 
     @Transactional(readOnly = true)
+    public List<ModelResponse> getAllModelsTotalInfo() {
+        return modelRepository.findAll().stream()
+                .map(this::toModelTotalInfoResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public ModelResponse getModelById(Long id) {
         Model model = modelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Model not found"));
-        return toModelResponse(model);
+        return toModelTotalInfoResponse(model);
     }
 
     @Transactional
@@ -45,7 +52,7 @@ public class ModelService {
                 .build();
 
         Model savedModel = modelRepository.save(model);
-        return toModelResponse(savedModel);
+        return toModelTotalInfoResponse(savedModel);
     }
 
     @Transactional
@@ -61,7 +68,7 @@ public class ModelService {
         model.setProfitMargin(request.getProfitMargin());
 
         Model updatedModel = modelRepository.save(model);
-        return toModelResponse(updatedModel);
+        return toModelTotalInfoResponse(updatedModel);
     }
 
     @Transactional
@@ -80,6 +87,20 @@ public class ModelService {
                 .priceOutput(model.getPriceOutput())
                 .provider(model.getProvider())
                 .description(model.getDescription())
+                .build();
+    }
+
+    private ModelResponse toModelTotalInfoResponse(Model model) {
+        return ModelResponse.builder()
+                .id(model.getId())
+                .name(model.getName())
+                .priceInput(model.getPriceInput())
+                .priceOutput(model.getPriceOutput())
+                .provider(model.getProvider())
+                .description(model.getDescription())
+                .profitMargin(model.getProfitMargin())
+                .createdAt(model.getCreatedAt())
+                .updatedAt(model.getUpdatedAt())
                 .build();
     }
 }

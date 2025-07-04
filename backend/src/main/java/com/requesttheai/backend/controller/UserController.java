@@ -53,14 +53,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUserProfiles());
     }
 
-    @DeleteMapping("/delete/{username}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<DeleteUserResponse> deleteUser(@PathVariable String username) {
-        return ResponseEntity.ok(
-            userService.deleteUserByUsername(username)
-        );
-    }
-
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserProfileResponse> createUser(@RequestBody CreateUserRequest request) {
@@ -71,5 +63,13 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserProfileResponse> updateUserByAdmin(@PathVariable String username, @RequestBody UpdateUserByAdminRequest request) {
         return ResponseEntity.ok(userService.updateUserByAdmin(username, request));
+    }
+
+    @DeleteMapping("/delete/{username}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<DeleteUserResponse> deleteUser(@PathVariable String username) {
+        return ResponseEntity.ok(
+            userService.deleteUserByUsername(username)
+        );
     }
 }

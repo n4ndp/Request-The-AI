@@ -31,6 +31,12 @@ public class ModelController {
         return ResponseEntity.ok(modelService.getAllModels());
     }
 
+    @GetMapping(params = "fullInfo=true")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<List<ModelResponse>> getAllModelsTotalInfo() {
+        return ResponseEntity.ok(modelService.getAllModelsTotalInfo());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ModelResponse> getModelById(@PathVariable Long id) {
         return ResponseEntity.ok(modelService.getModelById(id));

@@ -5,13 +5,13 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,17 +35,20 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(authRequest -> authRequest
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/users/me").hasAnyAuthority("USER", "ADMIN")
+                // Users
                 .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/users/*").hasAuthority("ADMIN")
-                .requestMatchers("/api/users/delete/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/recharge/**").hasAnyAuthority("USER", "ADMIN")
+                .requestMatchers("/api/users/delete/*").hasAuthority("ADMIN")
+                .requestMatchers("/api/users/me").hasAnyAuthority("USER", "ADMIN")
+                // Recharge
+                .requestMatchers("/api/recharge/*").hasAnyAuthority("USER", "ADMIN")
+                // Models
                 .requestMatchers(HttpMethod.GET, "/api/models").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/models/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/models?fullInfo=true").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/models").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/models/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/models/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/models/*").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/models/*").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -30,4 +30,4 @@ public class UpdateUserByAdminRequest {
     @NotNull
     @DecimalMin("0.00")
     private BigDecimal balance;
-} 
+}
