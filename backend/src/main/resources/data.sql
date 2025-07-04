@@ -13,3 +13,14 @@ ON CONFLICT (name) DO NOTHING;
 INSERT INTO models (name, price_input, price_output, provider, description, profit_margin) 
 VALUES ('gpt-4o-mini', 0.00000018, 0.00000009, 'Anthropic', 'Versión compacta de GPT-4o para respuestas rápidas', 0.20)
 ON CONFLICT (name) DO NOTHING;
+
+-- Usuario admin
+INSERT INTO users (username, password) 
+VALUES ('admin', '$2a$10$TiiWhSAEwdcjgWwX7O.lHOefZFOOvKrjSC7WhytwMQgtD3URxiaCm') 
+ON CONFLICT (username) DO NOTHING;
+
+-- Cuenta admin
+INSERT INTO accounts (full_name, email, role, status, balance, user_id)
+SELECT 'Administrador Principal', 'admin@requesttheai.com', 'ADMIN', 'ACTIVE', 0.00, id 
+FROM users WHERE username = 'admin'
+ON CONFLICT (email) DO NOTHING;
