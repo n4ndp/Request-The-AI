@@ -36,6 +36,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authRequest -> authRequest
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/ai/**").permitAll()
+                .requestMatchers("/api/chat/**").permitAll() // solo para pruebas
                 // Users
                 .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users").hasAuthority("ADMIN")
@@ -74,7 +75,8 @@ public class SecurityConfig {
         ));
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
-            "X-Custom-Header"
+            "X-Custom-Header",
+            "Content-Type"
         ));
         configuration.setMaxAge(3600L);
 

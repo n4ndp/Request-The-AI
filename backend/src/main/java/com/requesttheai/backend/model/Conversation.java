@@ -43,7 +43,7 @@ public class Conversation {
     private Long id;
 
     @NotBlank
-    @Size(max = 100)
+    @Size(max = 45)
     @Column(nullable = false)
     private String title;
 

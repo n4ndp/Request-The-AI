@@ -1,7 +1,6 @@
 package com.requesttheai.backend.dto;
 
-import java.math.BigDecimal;
-
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +10,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatResponse {
+public class SendMessageRequest {
+    @NotBlank
+    private String content;
+    
     private Long conversationId;
-    private String aiResponse;
-    private BigDecimal inputCost;
-    private BigDecimal outputCost;
-    private BigDecimal remainingBalance;
+
+    private String previousMessageOpenAiId;
+    
+    @NotBlank
+    private String modelName;
 }
