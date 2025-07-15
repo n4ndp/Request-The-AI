@@ -12,6 +12,7 @@ const Chat = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [highlightCredits, setHighlightCredits] = useState(false);
 
     useEffect(() => {
         const fetchModels = async () => {
@@ -71,6 +72,13 @@ const Chat = () => {
         setModelProvider(model.provider.toLowerCase());
     }
 
+    const handleInsufficientCredits = () => {
+        setHighlightCredits(true);
+        setTimeout(() => {
+            setHighlightCredits(false);
+        }, 3000);
+    };
+
     if (loading && !user) { // Adjusted loading condition
         return <div>Loading...</div>;
     }
@@ -82,6 +90,7 @@ const Chat = () => {
                 setIsOpen={setSidebarOpen}
                 user={user}
                 onUserBalanceUpdate={updateUserBalance}
+                highlightCredits={highlightCredits}
             />
             <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
                 <ChatView 
@@ -89,6 +98,7 @@ const Chat = () => {
                     selectedModel={selectedModel}
                     onModelChange={handleModelChange}
                     modelProvider={modelProvider}
+                    onInsufficientCredits={handleInsufficientCredits}
                 />
             </div>
         </div>

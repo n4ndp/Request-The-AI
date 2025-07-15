@@ -3,8 +3,10 @@ import ChatInput from './ChatInput';
 import Message from './Message';
 import { FaBrain, FaWandMagicSparkles, FaChevronDown } from 'react-icons/fa6';
 import '../../styles/chatview.css';
+import chatService from '../../services/chatService';
+import Swal from 'sweetalert2';
 
-const ChatView = ({ models, selectedModel, onModelChange, modelProvider }) => {
+const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsufficientCredits }) => {
     const [messages, setMessages] = useState([]);
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const messageListRef = useRef(null);
@@ -52,14 +54,47 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider }) => {
         setDropdownOpen(false);
     };
 
-    const handleSendMessage = (text) => {
+    const handleSendMessage = async (text) => {
         const userMessage = { text, sender: 'user' };
-        const aiMessage = { 
-            text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ut justo ac nulla luctus semper. Aenean congue auctor massa, a malesuada massa porttitor quis. Suspendisse id blandit at, tincidunt id, id tincidunt. Vivamus eleifend, interdum a, mattis et, dictum non. Donec a porta quam, ornare fermentum sapien. Etiam lacinia fringilla dignissim. In faucibus est urna, id tincidunt odio molestie vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vel libero, interdum a, mattis et, dictum non.', 
-            sender: 'ai',
-            provider: modelProvider 
-        };
-        setMessages([...messages, userMessage, aiMessage]);
+        setMessages(prevMessages => [...prevMessages, userMessage]);
+
+        try {
+            const response = await chatService.sendMessage({
+                content: text,
+                modelName: selectedModel.name,
+                conversationId: messages.length > 0 ? messages[0].conversationId : null,
+                previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
+            });
+
+            const aiMessage = {
+                text: response.aiResponse,
+                sender: 'ai',
+                provider: modelProvider,
+                conversationId: response.conversationId,
+                openAiMessageId: response.openAiMessageId
+            };
+
+            setMessages(prevMessages => [...prevMessages, aiMessage]);
+        } catch (error) {
+            if (error.message.includes('Insufficient credits')) {
+                onInsufficientCredits();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No tienes créditos',
+                    text: 'Por favor, añade más créditos para continuar.',
+                    confirmButtonText: 'Entendido'
+                });
+            } else {
+                console.error('Error sending message:', error);
+                const errorMessage = {
+                    text: 'Error sending message. Please try again.',
+                    sender: 'ai',
+                    provider: 'error'
+                };
+                setMessages(prevMessages => [...prevMessages, errorMessage]);
+            }
+            setMessages(prevMessages => prevMessages.slice(0, -1)); // Remove the user message optimistic update
+        }
     };
 
     const ModelIcon = modelProvider === 'openai' ? FaBrain : FaWandMagicSparkles;

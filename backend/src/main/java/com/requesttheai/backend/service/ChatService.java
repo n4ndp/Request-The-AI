@@ -15,6 +15,7 @@ import com.requesttheai.backend.dto.ConversationSummaryResponse;
 import com.requesttheai.backend.dto.CreateConversationRequest;
 import com.requesttheai.backend.dto.SendMessageRequest;
 import com.requesttheai.backend.dto.SendMessageResponse;
+import com.requesttheai.backend.exception.InsufficientCreditsException;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.Conversation;
 import com.requesttheai.backend.model.Message;
@@ -77,6 +78,11 @@ public class ChatService {
 	public SendMessageResponse sendMessage(SendMessageRequest request, String username) {
 		User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+		Account userAccount = user.getAccount();
+		if (userAccount.getBalance().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new InsufficientCreditsException("You have no credits. Please add more to continue.");
+		}
 
 		Model model = modelRepository.findByName(request.getModelName())
 				.orElseThrow(() -> new RuntimeException("Model not found"));
@@ -144,9 +150,8 @@ public class ChatService {
 		BigDecimal platformRevenue = realCost.multiply(model.getProfitMargin());
 		BigDecimal totalCost = realCost.add(platformRevenue);
 
-		Account userAccount = user.getAccount();
 		if (userAccount.getBalance().compareTo(totalCost) < 0) {
-			throw new RuntimeException("Saldo insuficiente");
+			throw new InsufficientCreditsException("The cost of this message exceeds your available balance. Please add more credits to continue.");
 		}
 
 		userAccount.setBalance(userAccount.getBalance().subtract(totalCost));

@@ -7,7 +7,7 @@ import UserModal from './UserModal';
 import RechargeHistoryModal from './Recharge/RechargeHistoryModal';
 import AddCreditsModal from './Recharge/AddCreditsModal';
 
-const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate }) => {
+const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate, highlightCredits  }) => {
     const navigate = useNavigate();
     const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
     const [showUserModal, setShowUserModal] = useState(false);
@@ -188,7 +188,7 @@ const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate }) => {
             
             <div className="sidebar-bottom">
                 <nav className="sidebar-nav">
-                    <button onClick={handleAddCredits} className="nav-item nav-button">
+                    <button onClick={handleAddCredits} className={`add-credits-button ${highlightCredits ? 'highlight' : ''}`}>
                         <FaWandMagicSparkles /> {isOpen && <span>Add more credits</span>}
                     </button>
                     <a href="#" className="nav-item">

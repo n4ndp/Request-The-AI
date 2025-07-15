@@ -330,3 +330,22 @@
     outline: none;
     box-shadow: none;
 }
+
+.add-credits-button.highlight {
+    animation: highlight-animation 1s infinite;
+}
+
+@keyframes highlight-animation {
+    0% {
+        background-color: #4caf50;
+        box-shadow: 0 0 5px #4caf50;
+    }
+    50% {
+        background-color: #81c784;
+        box-shadow: 0 0 20px #81c784;
+    }
+    100% {
+        background-color: #4caf50;
+        box-shadow: 0 0 5px #4caf50;
+    }
+}
