@@ -2,19 +2,26 @@ package com.requesttheai.backend.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import com.openai.models.ChatModel;
-import com.openai.models.responses.ResponseCreateParams;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionChunk;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import com.openai.models.chat.completions.ChatCompletionUserMessageParam;
+import com.openai.core.http.StreamResponse;
 import com.requesttheai.backend.dto.ConversationSummaryResponse;
 import com.requesttheai.backend.dto.CreateConversationRequest;
 import com.requesttheai.backend.dto.SendMessageRequest;
 import com.requesttheai.backend.dto.SendMessageResponse;
+import com.requesttheai.backend.dto.StreamMessageChunk;
 import com.requesttheai.backend.exception.InsufficientCreditsException;
 import com.requesttheai.backend.model.Account;
 import com.requesttheai.backend.model.Conversation;
@@ -48,11 +55,24 @@ public class ChatService {
 	private final UsageRepository usageRepository;
 	private final AccountRepository accountRepository;
 
-	private com.openai.client.OpenAIClient buildClient() {
+	private OpenAIClient buildClient() {
         return OpenAIOkHttpClient.builder()
                 .apiKey(apiKey)
                 .build();
     }
+
+	private boolean isValidOpenAIModel(String modelName) {
+		// Lista de modelos válidos de OpenAI que soportan streaming
+		return modelName != null && (
+			modelName.equals("gpt-4o") ||
+			modelName.equals("gpt-4o-mini") ||
+			modelName.equals("gpt-4") ||
+			modelName.equals("gpt-4-turbo") ||
+			modelName.equals("gpt-3.5-turbo") ||
+			modelName.startsWith("gpt-4") ||
+			modelName.startsWith("gpt-3.5")
+		);
+	}
 
     public ConversationSummaryResponse createConversation(CreateConversationRequest request, String username) {
         User user = userRepository.findByUsername(username)
@@ -77,7 +97,7 @@ public class ChatService {
 
 	public SendMessageResponse sendMessage(SendMessageRequest request, String username) {
 		User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
 		Account userAccount = user.getAccount();
 		if (userAccount.getBalance().compareTo(BigDecimal.ZERO) <= 0) {
@@ -109,27 +129,18 @@ public class ChatService {
             .build();
     	messageRepository.save(userMessage);
 		
-		var paramsBuilder = ResponseCreateParams.builder()
-            .input(request.getContent())
+		ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+            .addMessage(ChatCompletionUserMessageParam.builder()
+                    .content(request.getContent())
+                    .build())
             .model(ChatModel.of(request.getModelName()))
-            .store(true);
-
-		if (request.getPreviousMessageOpenAiId() != null) {
-			paramsBuilder.previousResponseId(request.getPreviousMessageOpenAiId());
-		}
+            .build();
 
 		OpenAIClient client = buildClient();
-		var openAiResponse = client.responses().create(paramsBuilder.build());
+		ChatCompletion chatCompletion = client.chat().completions().create(params);
 
-		String aiText = openAiResponse.output().stream()
-            .flatMap(item -> item.message().stream())
-			.flatMap(message -> message.content().stream())
-			.flatMap(content -> content.outputText().stream())
-			.map(text -> text.text())
-            .findFirst()
-            .orElse("(Sin respuesta)");
-
-		String openAiMessageId = openAiResponse.id();
+		String aiText = chatCompletion.choices().get(0).message().content().orElse("(Sin respuesta)");
+		String openAiMessageId = chatCompletion.id();
 
 		Message aiMessage = Message.builder()
             .content(aiText)
@@ -188,5 +199,245 @@ public class ChatService {
             .outputTokens(outputTokens)
             .totalCost(totalCost)
             .build();
+	}
+
+	public SseEmitter sendMessageStream(SendMessageRequest request, String username) {
+		System.out.println("🚀 Starting stream for user: " + username);
+		System.out.println("📝 Request data: " + request.getContent());
+		System.out.println("🤖 Model: " + request.getModelName());
+		
+		SseEmitter emitter = new SseEmitter(0L); // No timeout
+		System.out.println("📡 SseEmitter created");
+
+		CompletableFuture.runAsync(() -> {
+			try {
+				System.out.println("🔄 Starting async processing...");
+				
+				User user = userRepository.findByUsername(username)
+						.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+				System.out.println("👤 User found: " + user.getId());
+
+				Account userAccount = user.getAccount();
+				if (userAccount.getBalance().compareTo(BigDecimal.ZERO) <= 0) {
+					System.out.println("❌ Insufficient credits for user: " + username);
+					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+							.type("error")
+							.error("You have no credits. Please add more to continue.")
+							.build();
+					emitter.send(SseEmitter.event().data(errorChunk));
+					emitter.complete();
+					return;
+				}
+				System.out.println("💰 User has credits: " + userAccount.getBalance());
+
+				Model model = modelRepository.findByName(request.getModelName())
+						.orElseThrow(() -> new RuntimeException("Model not found"));
+				System.out.println("🤖 Model found: " + model.getName());
+
+				Conversation conversation;
+				if (request.getConversationId() == null) {
+					String title = request.getContent().trim();
+					String shortTitle = title.length() > 40 ? title.substring(0, 40) + "..." : title;
+					conversation = Conversation.builder()
+							.title(shortTitle)
+							.user(user)
+							.build();
+					conversation = conversationRepository.save(conversation);
+					System.out.println("💬 New conversation created: " + conversation.getId());
+				} else {
+					conversation = conversationRepository.findById(request.getConversationId())
+							.orElseThrow(() -> new RuntimeException("Conversation not found"));
+					System.out.println("💬 Using existing conversation: " + conversation.getId());
+				}
+
+				Message userMessage = Message.builder()
+						.content(request.getContent())
+						.messageType(MessageType.USER)
+						.conversation(conversation)
+						.model(model)
+						.build();
+				messageRepository.save(userMessage);
+				System.out.println("✅ User message saved: " + userMessage.getId());
+
+				// Send start event
+				StreamMessageChunk startChunk = StreamMessageChunk.builder()
+						.type("start")
+						.conversationId(conversation.getId())
+						.userMessageId(userMessage.getId())
+						.build();
+				System.out.println("📤 Sending start event: " + startChunk);
+				emitter.send(SseEmitter.event().data(startChunk));
+
+				// Create streaming request
+				ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+						.addMessage(ChatCompletionUserMessageParam.builder()
+								.content(request.getContent())
+								.build())
+						.model(ChatModel.of(request.getModelName()))
+						.build();
+				System.out.println("🔧 OpenAI params created for model: " + request.getModelName());
+
+				// Validate model name before making request
+				String modelName = request.getModelName();
+				if (!isValidOpenAIModel(modelName)) {
+					System.err.println("❌ Invalid OpenAI model name: " + modelName);
+					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+							.type("error")
+							.error("Invalid model name: " + modelName + ". Please use a valid OpenAI model.")
+							.build();
+					emitter.send(SseEmitter.event().data(errorChunk));
+					emitter.complete();
+					return;
+				}
+
+				OpenAIClient client = buildClient();
+				StringBuilder aiResponseBuilder = new StringBuilder();
+				System.out.println("🌐 Starting OpenAI streaming request...");
+
+				try (StreamResponse<ChatCompletionChunk> streamResponse = client.chat().completions().createStreaming(params)) {
+					System.out.println("✅ OpenAI stream created successfully");
+					
+					streamResponse.stream().forEach(chunk -> {
+						System.out.println("📦 Received chunk from OpenAI: " + chunk);
+						
+						if (!chunk.choices().isEmpty()) {
+							String content = chunk.choices().get(0).delta().content().orElse("");
+							System.out.println("📝 Content from chunk: '" + content + "'");
+							
+							if (!content.isEmpty()) {
+								aiResponseBuilder.append(content);
+								try {
+									StreamMessageChunk contentChunk = StreamMessageChunk.builder()
+											.type("content")
+											.content(content)
+											.build();
+									System.out.println("📤 Sending content chunk: " + contentChunk);
+									emitter.send(SseEmitter.event().data(contentChunk));
+								} catch (Exception e) {
+									System.err.println("❌ Error sending content chunk: " + e.getMessage());
+									throw new RuntimeException("Error sending streaming content", e);
+								}
+							}
+						} else {
+							System.out.println("⚠️ Chunk has no choices");
+						}
+					});
+				} catch (Exception openAiException) {
+					System.err.println("💥 OpenAI API Error: " + openAiException.getMessage());
+					openAiException.printStackTrace();
+					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+							.type("error")
+							.error("OpenAI API Error: " + openAiException.getMessage())
+							.build();
+					emitter.send(SseEmitter.event().data(errorChunk));
+					emitter.complete();
+					return;
+				}
+
+				String aiText = aiResponseBuilder.toString();
+				System.out.println("🤖 Complete AI response: '" + aiText + "'");
+				
+				if (aiText.isEmpty()) {
+					aiText = "(Sin respuesta)";
+					System.out.println("⚠️ AI response was empty, using default message");
+				}
+
+				// Save AI message
+				Message aiMessage = Message.builder()
+						.content(aiText)
+						.messageType(MessageType.MODEL)
+						.conversation(conversation)
+						.model(model)
+						.build();
+				messageRepository.save(aiMessage);
+				System.out.println("✅ AI message saved: " + aiMessage.getId());
+
+				// Calculate costs
+				int inputTokens = request.getContent().split("\\s+").length + 10;
+				int outputTokens = aiText.split("\\s+").length + 10;
+				int totalTokens = inputTokens + outputTokens;
+				System.out.println("💰 Token calculation - Input: " + inputTokens + ", Output: " + outputTokens + ", Total: " + totalTokens);
+
+				BigDecimal inputCost = model.getPriceInput().multiply(BigDecimal.valueOf(inputTokens));
+				BigDecimal outputCost = model.getPriceOutput().multiply(BigDecimal.valueOf(outputTokens));
+				BigDecimal realCost = inputCost.add(outputCost);
+				BigDecimal platformRevenue = realCost.multiply(model.getProfitMargin());
+				BigDecimal totalCost = realCost.add(platformRevenue);
+				System.out.println("💸 Total cost calculated: " + totalCost);
+
+				if (userAccount.getBalance().compareTo(totalCost) < 0) {
+					System.out.println("❌ Insufficient balance for cost: " + totalCost);
+					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+							.type("error")
+							.error("The cost of this message exceeds your available balance. Please add more credits to continue.")
+							.build();
+					emitter.send(SseEmitter.event().data(errorChunk));
+					emitter.complete();
+					return;
+				}
+
+				// Update balances
+				userAccount.setBalance(userAccount.getBalance().subtract(totalCost));
+				accountRepository.save(userAccount);
+				System.out.println("💰 User balance updated: " + userAccount.getBalance());
+
+				List<Account> adminAccounts = accountRepository.findByRole(UserRole.ADMIN);
+				if (!adminAccounts.isEmpty()) {
+					Account adminAccount = adminAccounts.get(0);
+					adminAccount.setBalance(adminAccount.getBalance().add(platformRevenue));
+					accountRepository.save(adminAccount);
+					System.out.println("💰 Admin balance updated: " + adminAccount.getBalance());
+				}
+
+				// Save usage
+				Usage usage = Usage.builder()
+						.message(aiMessage)
+						.tokens(totalTokens)
+						.realAmount(realCost)
+						.platformRevenue(platformRevenue)
+						.totalAmount(totalCost)
+						.status(TransactionStatus.SUCCESS)
+						.build();
+				usageRepository.save(usage);
+				System.out.println("📊 Usage record saved");
+
+				// Update conversation
+				conversation.setEndedAt(aiMessage.getCreatedAt());
+				conversationRepository.save(conversation);
+				System.out.println("💬 Conversation updated");
+
+				// Send end event
+				StreamMessageChunk endChunk = StreamMessageChunk.builder()
+						.type("end")
+						.conversationId(conversation.getId())
+						.userMessageId(userMessage.getId())
+						.aiMessageId(aiMessage.getId())
+						.inputTokens(inputTokens)
+						.outputTokens(outputTokens)
+						.totalCost(totalCost)
+						.build();
+				System.out.println("📤 Sending end event: " + endChunk);
+				emitter.send(SseEmitter.event().data(endChunk));
+				emitter.complete();
+				System.out.println("🏁 Stream completed successfully");
+
+			} catch (Exception e) {
+				System.err.println("💥 Error in streaming: " + e.getMessage());
+				e.printStackTrace();
+				try {
+					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+							.type("error")
+							.error("Error processing message: " + e.getMessage())
+							.build();
+					emitter.send(SseEmitter.event().data(errorChunk));
+					emitter.completeWithError(e);
+				} catch (Exception sendError) {
+					System.err.println("💥 Error sending error chunk: " + sendError.getMessage());
+					emitter.completeWithError(sendError);
+				}
+			}
+		});
+
+		return emitter;
 	}
 }

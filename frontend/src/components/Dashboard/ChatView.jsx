@@ -55,45 +55,169 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
     };
 
     const handleSendMessage = async (text) => {
+        console.log('🚀 ChatView: Starting to send message:', text);
+        console.log('📊 ChatView: Current messages count:', messages.length);
+        
         const userMessage = { text, sender: 'user' };
-        setMessages(prevMessages => [...prevMessages, userMessage]);
+        setMessages(prevMessages => {
+            const newMessages = [...prevMessages, userMessage];
+            console.log('👤 ChatView: Added user message, new count:', newMessages.length);
+            return newMessages;
+        });
+
+        // Create an initial AI message that will be updated with streaming content
+        const aiMessage = {
+            text: '',
+            sender: 'ai',
+            provider: modelProvider,
+            conversationId: null,
+            openAiMessageId: null,
+            isStreaming: true
+        };
+        
+        setMessages(prevMessages => {
+            const newMessages = [...prevMessages, aiMessage];
+            console.log('🤖 ChatView: Added initial AI message, new count:', newMessages.length);
+            return newMessages;
+        });
+        
+        const aiMessageIndex = messages.length + 1; // +1 because we just added the user message
+        console.log('📍 ChatView: AI message will be at index:', aiMessageIndex);
 
         try {
-            const response = await chatService.sendMessage({
-                content: text,
-                modelName: selectedModel.name,
-                conversationId: messages.length > 0 ? messages[0].conversationId : null,
-                previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
-            });
-
-            const aiMessage = {
-                text: response.aiResponse,
-                sender: 'ai',
-                provider: modelProvider,
-                conversationId: response.conversationId,
-                openAiMessageId: response.openAiMessageId
-            };
-
-            setMessages(prevMessages => [...prevMessages, aiMessage]);
+            chatService.sendMessageStream(
+                {
+                    content: text,
+                    modelName: selectedModel.name,
+                    conversationId: messages.length > 0 ? messages[0].conversationId : null,
+                    previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
+                },
+                // onChunk callback
+                (chunk) => {
+                    console.log('📦 ChatView: Received chunk:', chunk);
+                    
+                    if (chunk.type === 'start') {
+                        console.log('🟢 ChatView: Processing START chunk');
+                        setMessages(prevMessages => {
+                            const newMessages = [...prevMessages];
+                            if (newMessages[aiMessageIndex]) {
+                                newMessages[aiMessageIndex] = {
+                                    ...newMessages[aiMessageIndex],
+                                    conversationId: chunk.conversationId,
+                                    isStreaming: true
+                                };
+                                console.log('✅ ChatView: Updated AI message with conversationId:', chunk.conversationId);
+                            } else {
+                                console.error('❌ ChatView: AI message not found at index:', aiMessageIndex);
+                            }
+                            return newMessages;
+                        });
+                    } else if (chunk.type === 'content') {
+                        console.log('📝 ChatView: Processing CONTENT chunk:', chunk.content);
+                        setMessages(prevMessages => {
+                            const newMessages = [...prevMessages];
+                            if (newMessages[aiMessageIndex]) {
+                                const currentText = newMessages[aiMessageIndex].text;
+                                newMessages[aiMessageIndex] = {
+                                    ...newMessages[aiMessageIndex],
+                                    text: currentText + chunk.content
+                                };
+                                console.log('✅ ChatView: Updated AI message text, new length:', newMessages[aiMessageIndex].text.length);
+                            } else {
+                                console.error('❌ ChatView: AI message not found at index for content update:', aiMessageIndex);
+                            }
+                            return newMessages;
+                        });
+                    } else if (chunk.type === 'end') {
+                        console.log('🏁 ChatView: Processing END chunk');
+                        setMessages(prevMessages => {
+                            const newMessages = [...prevMessages];
+                            if (newMessages[aiMessageIndex]) {
+                                newMessages[aiMessageIndex] = {
+                                    ...newMessages[aiMessageIndex],
+                                    conversationId: chunk.conversationId,
+                                    openAiMessageId: chunk.openAiMessageId,
+                                    isStreaming: false
+                                };
+                                console.log('✅ ChatView: Finalized AI message');
+                            } else {
+                                console.error('❌ ChatView: AI message not found at index for end update:', aiMessageIndex);
+                            }
+                            return newMessages;
+                        });
+                    } else if (chunk.type === 'error') {
+                        console.error('❌ ChatView: Processing ERROR chunk:', chunk.error);
+                        setMessages(prevMessages => {
+                            const newMessages = [...prevMessages];
+                            if (newMessages[aiMessageIndex]) {
+                                newMessages[aiMessageIndex] = {
+                                    ...newMessages[aiMessageIndex],
+                                    text: 'Error: ' + chunk.error,
+                                    isStreaming: false,
+                                    isError: true
+                                };
+                                console.log('✅ ChatView: Updated AI message with error');
+                            } else {
+                                console.error('❌ ChatView: AI message not found at index for error update:', aiMessageIndex);
+                            }
+                            return newMessages;
+                        });
+                        if (chunk.error.includes('Insufficient credits')) {
+                            onInsufficientCredits();
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'No tienes créditos',
+                                text: 'Por favor, añade más créditos para continuar.',
+                                confirmButtonText: 'Entendido'
+                            });
+                        }
+                    }
+                },
+                // onError callback
+                (error) => {
+                    console.error('💥 ChatView: Stream error:', error);
+                    setMessages(prevMessages => {
+                        const newMessages = [...prevMessages];
+                        if (newMessages[aiMessageIndex]) {
+                            newMessages[aiMessageIndex] = {
+                                ...newMessages[aiMessageIndex],
+                                text: 'Error: Failed to send message. Please try again.',
+                                isStreaming: false,
+                                isError: true
+                            };
+                        }
+                        return newMessages;
+                    });
+                    
+                    if (error.message.includes('Insufficient credits')) {
+                        onInsufficientCredits();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No tienes créditos',
+                            text: 'Por favor, añade más créditos para continuar.',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                },
+                // onComplete callback
+                () => {
+                    console.log('🏁 ChatView: Stream completed callback triggered');
+                }
+            );
         } catch (error) {
-            if (error.message.includes('Insufficient credits')) {
-                onInsufficientCredits();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No tienes créditos',
-                    text: 'Por favor, añade más créditos para continuar.',
-                    confirmButtonText: 'Entendido'
-                });
-            } else {
-                console.error('Error sending message:', error);
-                const errorMessage = {
-                    text: 'Error sending message. Please try again.',
-                    sender: 'ai',
-                    provider: 'error'
-                };
-                setMessages(prevMessages => [...prevMessages, errorMessage]);
-            }
-            setMessages(prevMessages => prevMessages.slice(0, -1)); // Remove the user message optimistic update
+            console.error('💥 ChatView: Error starting stream:', error);
+            setMessages(prevMessages => {
+                const newMessages = [...prevMessages];
+                if (newMessages[aiMessageIndex]) {
+                    newMessages[aiMessageIndex] = {
+                        ...newMessages[aiMessageIndex],
+                        text: 'Error: Failed to start streaming. Please try again.',
+                        isStreaming: false,
+                        isError: true
+                    };
+                }
+                return newMessages;
+            });
         }
     };
 

@@ -1,13 +1,16 @@
 package com.requesttheai.backend.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.requesttheai.backend.dto.ConversationSummaryResponse;
 import com.requesttheai.backend.dto.CreateConversationRequest;
@@ -36,5 +39,11 @@ public class ChatController {
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<SendMessageResponse> sendMessage(@RequestBody SendMessageRequest request, @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(chatService.sendMessage(request, userDetails.getUsername()));
+    }
+
+    @PostMapping(value = "/message/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("hasAuthority('USER')")
+    public SseEmitter sendMessageStream(@RequestBody SendMessageRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+        return chatService.sendMessageStream(request, userDetails.getUsername());
     }
 }

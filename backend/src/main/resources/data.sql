@@ -1,12 +1,17 @@
 -- Modelos
 INSERT INTO models (name, price_input, price_output, provider, description, profit_margin, created_at, updated_at) 
 VALUES 
-('o4-mini-2025-04-16', 0.00000010, 0.00000040, 'OpenAI', 'Faster, more affordable reasoning model', 0.20, NOW(), NOW())
+('gpt-4o-mini', 0.00000010, 0.00000040, 'OpenAI', 'Faster, more affordable reasoning model', 0.20, NOW(), NOW())
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO models (name, price_input, price_output, provider, description, profit_margin, created_at, updated_at) 
 VALUES 
-('gpt-4.1-2025-04-14', 0.00000015, 0.00000060, 'OpenAI', 'Flagship GPT model for complex tasks', 0.20, NOW(), NOW())
+('gpt-4o', 0.00000015, 0.00000060, 'OpenAI', 'Flagship GPT model for complex tasks', 0.20, NOW(), NOW())
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO models (name, price_input, price_output, provider, description, profit_margin, created_at, updated_at) 
+VALUES 
+('gpt-3.5-turbo', 0.00000050, 0.00000150, 'OpenAI', 'Fast and efficient for most tasks', 0.20, NOW(), NOW())
 ON CONFLICT (name) DO NOTHING;
 
 
