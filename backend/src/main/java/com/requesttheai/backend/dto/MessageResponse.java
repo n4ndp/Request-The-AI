@@ -2,6 +2,8 @@ package com.requesttheai.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.requesttheai.backend.model.enums.MessageType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ConversationSummaryResponse {
+public class MessageResponse {
     private Long id;
-    private String title;
+    private String content;
+    private MessageType messageType;
     private LocalDateTime createdAt;
-    private LocalDateTime endedAt;
-    private int messageCount;
-}
+    private String openAiMessageId;
+    private String modelName;
+} 

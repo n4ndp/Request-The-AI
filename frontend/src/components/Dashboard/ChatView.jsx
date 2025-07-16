@@ -7,7 +7,17 @@ import '../../styles/chatview.css';
 import chatService from '../../services/chatService';
 import Swal from 'sweetalert2';
 
-const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsufficientCredits, userBalance }) => {
+const ChatView = ({ 
+    models, 
+    selectedModel, 
+    onModelChange, 
+    modelProvider, 
+    onInsufficientCredits, 
+    userBalance,
+    currentConversation,
+    initialMessages,
+    onConversationCreated
+}) => {
     const [messages, setMessages] = useState([]);
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
@@ -24,6 +34,17 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
             return acc;
         }, {});
     }, [models]);
+
+    // Cargar mensajes iniciales cuando cambia la conversación seleccionada
+    useEffect(() => {
+        // Solo cargar mensajes iniciales cuando el usuario selecciona una conversación existente
+        if (currentConversation && initialMessages && initialMessages.length > 0) {
+            setMessages(initialMessages);
+        } else if (!currentConversation) {
+            // Limpiar mensajes solo cuando explícitamente se inicia un nuevo chat
+            setMessages([]);
+        }
+    }, [initialMessages]);
 
     const scrollToBottom = () => {
         if (messageListRef.current) {
@@ -64,6 +85,7 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
 
     const handleSendMessage = async (text) => {
         console.log('🚀 ChatView: Starting to send message:', text);
+        console.log('📊 ChatView: Current conversation:', currentConversation);
         console.log('📊 ChatView: Current messages count:', messages.length);
         
         // Verificar si el usuario tiene créditos suficientes antes de enviar
@@ -85,7 +107,7 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
             text: '',
             sender: 'ai',
             provider: modelProvider,
-            conversationId: null,
+            conversationId: currentConversation?.id || null,
             openAiMessageId: null,
             isStreaming: true
         };
@@ -100,12 +122,10 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
         console.log('📍 ChatView: AI message will be at index:', aiMessageIndex);
 
         try {
-            // Find the most recent AI message to get the conversationId
-            const lastAiMessage = messages.slice().reverse().find(msg => msg.sender === 'ai' && msg.conversationId);
-            const conversationId = lastAiMessage ? lastAiMessage.conversationId : null;
+            // Si no hay conversación actual, se creará una automáticamente en el backend
+            const conversationId = currentConversation?.id || null;
             
-            console.log('🔍 ChatView: Looking for conversationId in messages:', messages.length);
-            console.log('💬 ChatView: Found conversationId:', conversationId);
+            console.log('🔍 ChatView: Using conversationId:', conversationId);
             
             chatService.sendMessageStream(
                 {
@@ -134,6 +154,19 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
                             }
                             return newMessages;
                         });
+
+                        // Si no había conversación previa, notificar que se creó una nueva
+                        if (!currentConversation && chunk.conversationId) {
+                            console.log('🆕 ChatView: New conversation created, notifying parent');
+                            // Crear objeto de conversación para notificar al padre
+                            const newConversation = {
+                                id: chunk.conversationId,
+                                title: text.length > 40 ? text.substring(0, 40) + "..." : text,
+                                createdAt: new Date().toISOString()
+                            };
+                            // Notificar al padre pero sin cambiar la vista actual
+                            onConversationCreated(newConversation);
+                        }
                     } else if (chunk.type === 'content') {
                         console.log('📝 ChatView: Processing CONTENT chunk:', chunk.content);
                         setMessages(prevMessages => {
@@ -158,7 +191,7 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
                                 newMessages[aiMessageIndex] = {
                                     ...newMessages[aiMessageIndex],
                                     conversationId: chunk.conversationId,
-                                    openAiMessageId: chunk.openAiMessageId,
+                                    openAiMessageId: chunk.aiMessageId,
                                     isStreaming: false
                                 };
                                 console.log('✅ ChatView: Finalized AI message');
@@ -281,7 +314,9 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
                         <h1 className="welcome-title">
                             Welcome to Request The AI
                         </h1>
-                        <p className="welcome-subtitle">The power of AI at your service - Tame the knowledge !</p>
+                        <p className="welcome-subtitle">
+                            The power of AI at your service - Tame the knowledge !
+                        </p>
                     </div>
                 ) : (
                     <>

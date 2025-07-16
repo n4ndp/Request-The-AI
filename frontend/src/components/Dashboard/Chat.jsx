@@ -4,6 +4,7 @@ import ChatView from './ChatView';
 import AddCreditsModal from './Recharge/AddCreditsModal';
 import userService from '../../services/userService';
 import modelService from '../../services/modelService';
+import chatService from '../../services/chatService';
 import '../../styles/chat.css';
 
 const Chat = () => {
@@ -15,6 +16,12 @@ const Chat = () => {
     const [loading, setLoading] = useState(true);
     const [highlightCredits, setHighlightCredits] = useState(false);
     const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
+    
+    // Estados para las conversaciones
+    const [conversations, setConversations] = useState([]);
+    const [currentConversation, setCurrentConversation] = useState(null);
+    const [conversationMessages, setConversationMessages] = useState([]);
+    const [loadingConversations, setLoadingConversations] = useState(true);
 
     useEffect(() => {
         const fetchModels = async () => {
@@ -51,6 +58,18 @@ const Chat = () => {
         }
     };
 
+    const fetchConversations = async () => {
+        try {
+            setLoadingConversations(true);
+            const userConversations = await chatService.getUserConversations();
+            setConversations(userConversations);
+        } catch (error) {
+            console.error('Error fetching conversations:', error);
+        } finally {
+            setLoadingConversations(false);
+        }
+    };
+
     const updateUserBalance = (newBalance) => {
         setUser(prevUser => ({
             ...prevUser,
@@ -62,7 +81,7 @@ const Chat = () => {
         const loadInitialData = async () => {
             setLoading(true);
             await fetchUserProfile();
-            // Models are already being fetched in another useEffect
+            await fetchConversations();
             setLoading(false);
         };
 
@@ -94,7 +113,48 @@ const Chat = () => {
         setShowAddCreditsModal(false);
     };
 
-    if (loading && !user) { // Adjusted loading condition
+    // Función para iniciar un nuevo chat
+    const handleNewChat = () => {
+        setCurrentConversation(null);
+        setConversationMessages([]);
+    };
+
+    // Función para seleccionar una conversación
+    const handleSelectConversation = async (conversation) => {
+        try {
+            setCurrentConversation(conversation);
+            const conversationDetail = await chatService.getConversationDetail(conversation.id);
+            
+            // Convertir los mensajes del backend al formato esperado por el frontend
+            const formattedMessages = conversationDetail.messages.map(msg => ({
+                text: msg.content,
+                sender: msg.messageType === 'USER' ? 'user' : 'ai',
+                provider: modelProvider,
+                conversationId: conversationDetail.id,
+                openAiMessageId: msg.openAiMessageId,
+                isStreaming: false
+            }));
+            
+            setConversationMessages(formattedMessages);
+        } catch (error) {
+            console.error('Error loading conversation:', error);
+        }
+    };
+
+    // Función para manejar cuando se envía un mensaje en una nueva conversación
+    const handleConversationCreated = (newConversation) => {
+        // Refrescar la lista de conversaciones para mostrar la nueva en el sidebar
+        fetchConversations();
+        
+        // Actualizar currentConversation después de un pequeño delay para no interrumpir el flujo del chat
+        setTimeout(() => {
+            if (!currentConversation) {
+                setCurrentConversation(newConversation);
+            }
+        }, 500);
+    };
+
+    if (loading && !user) {
         return <div>Loading...</div>;
     }
 
@@ -106,6 +166,11 @@ const Chat = () => {
                 user={user}
                 onUserBalanceUpdate={updateUserBalance}
                 highlightCredits={highlightCredits}
+                conversations={conversations}
+                currentConversation={currentConversation}
+                onSelectConversation={handleSelectConversation}
+                onNewChat={handleNewChat}
+                loadingConversations={loadingConversations}
             />
             <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
                 <ChatView 
@@ -115,6 +180,9 @@ const Chat = () => {
                     modelProvider={modelProvider}
                     onInsufficientCredits={handleInsufficientCredits}
                     userBalance={user?.balance || 0}
+                    currentConversation={currentConversation}
+                    initialMessages={conversationMessages}
+                    onConversationCreated={handleConversationCreated}
                 />
             </div>
             

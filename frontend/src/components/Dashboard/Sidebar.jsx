@@ -7,7 +7,18 @@ import UserModal from './UserModal';
 import RechargeHistoryModal from './Recharge/RechargeHistoryModal';
 import AddCreditsModal from './Recharge/AddCreditsModal';
 
-const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate, highlightCredits  }) => {
+const Sidebar = ({ 
+    isOpen, 
+    setIsOpen, 
+    user, 
+    onUserBalanceUpdate, 
+    highlightCredits,
+    conversations,
+    currentConversation,
+    onSelectConversation,
+    onNewChat,
+    loadingConversations
+}) => {
     const navigate = useNavigate();
     const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
     const [showUserModal, setShowUserModal] = useState(false);
@@ -55,6 +66,14 @@ const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate, highlightCredit
         handleLogout();
     };
 
+    const handleNewChatClick = () => {
+        onNewChat();
+    };
+
+    const handleConversationClick = (conversation) => {
+        onSelectConversation(conversation);
+    };
+
     // Determinar el tipo de cuenta basado en el balance
     const getAccountType = (balance) => {
         if (balance >= 100) return 'Premium account';
@@ -82,11 +101,19 @@ const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate, highlightCredit
 
     const credits = getCreditsInfo(currentUserBalance, userInfo.accountType);
     const creditPercentage = Math.min((credits.remaining / credits.total) * 100, 100);
-    const chatHistory = [
-        'How to write an impacting...',
-        'Web accessibility',
-        'Design inspiration'
-    ];
+
+    // Formatear fecha para mostrar en el historial
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) return 'Hoy';
+        if (diffDays === 2) return 'Ayer';
+        if (diffDays <= 7) return `Hace ${diffDays - 1} días`;
+        return date.toLocaleDateString();
+    };
 
     // Actualizar balance cuando cambie el prop user
     useEffect(() => {
@@ -154,17 +181,38 @@ const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate, highlightCredit
                 </div>
 
                 <div className="new-chat-section">
-                    <button className="new-chat-button">
+                    <button className="new-chat-button" onClick={handleNewChatClick}>
                         <FaPlus /> {isOpen && <span>Start a new chat</span>}
                     </button>
                 </div>
 
                 <nav className="chat-history">
-                    {chatHistory.map((chat, index) => (
-                        <a href="#" key={index} className="history-item">
+                    {loadingConversations && isOpen && (
+                        <div className="loading-conversations">
+                            <span>Cargando conversaciones...</span>
+                        </div>
+                    )}
+                    
+                    {!loadingConversations && conversations.length === 0 && isOpen && (
+                        <div className="no-conversations">
+                            <span>No hay conversaciones aún</span>
+                        </div>
+                    )}
+                    
+                    {!loadingConversations && conversations.map((conversation) => (
+                        <button
+                            key={conversation.id}
+                            className={`history-item ${currentConversation?.id === conversation.id ? 'active' : ''}`}
+                            onClick={() => handleConversationClick(conversation)}
+                        >
                             <FaRegCommentAlt />
-                            {isOpen && <span>{chat}</span>}
-                        </a>
+                            {isOpen && (
+                                <div className="conversation-info">
+                                    <span className="conversation-title">{conversation.title}</span>
+                                    <span className="conversation-date">{formatDate(conversation.createdAt)}</span>
+                                </div>
+                            )}
+                        </button>
                     ))}
                 </nav>
             </div>

@@ -8,6 +8,7 @@
     --logout-button-bg: transparent;
     --logout-button-hover: #40414f;
     --border-color: rgba(255, 255, 255, 0.1);
+    --conversation-active: #40414f;
 }
 
 .sidebar {
@@ -88,6 +89,12 @@
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.new-chat-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .chat-history {
@@ -96,9 +103,12 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    max-height: 400px; /* Limiting height to prevent sidebar overflow */
 }
 
 .history-item {
+    background: none;
+    border: none;
     color: var(--text-primary);
     text-decoration: none;
     padding: 0.75rem;
@@ -110,10 +120,48 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
 }
 
 .history-item:hover {
     background-color: var(--new-chat-hover);
+}
+
+.history-item.active {
+    background-color: var(--conversation-active);
+    border-left: 3px solid var(--theme-color-primary, #4caf50);
+}
+
+.conversation-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0; /* Para permitir text-overflow */
+}
+
+.conversation-title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.conversation-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+}
+
+.loading-conversations, .no-conversations {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-style: italic;
 }
 
 .sidebar-middle {

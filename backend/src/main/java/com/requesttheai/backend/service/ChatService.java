@@ -18,8 +18,10 @@ import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import com.openai.models.chat.completions.ChatCompletionUserMessageParam;
 import com.openai.models.chat.completions.ChatCompletionAssistantMessageParam;
 import com.openai.core.http.StreamResponse;
+import com.requesttheai.backend.dto.ConversationDetailResponse;
 import com.requesttheai.backend.dto.ConversationSummaryResponse;
 import com.requesttheai.backend.dto.CreateConversationRequest;
+import com.requesttheai.backend.dto.MessageResponse;
 import com.requesttheai.backend.dto.SendMessageRequest;
 import com.requesttheai.backend.dto.SendMessageResponse;
 import com.requesttheai.backend.dto.StreamMessageChunk;
@@ -112,6 +114,50 @@ public class ChatService {
 		return paramsBuilder;
 	}
 
+	public List<ConversationSummaryResponse> getUserConversations(String username) {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+		List<Conversation> conversations = conversationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+
+		return conversations.stream()
+				.map(conversation -> ConversationSummaryResponse.builder()
+						.id(conversation.getId())
+						.title(conversation.getTitle())
+						.createdAt(conversation.getCreatedAt())
+						.endedAt(conversation.getEndedAt())
+						.messageCount(conversation.getMessages().size())
+						.build())
+				.toList();
+	}
+
+	public ConversationDetailResponse getConversationDetail(Long conversationId, String username) {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+		Conversation conversation = conversationRepository.findByIdAndUserIdWithMessages(conversationId, user.getId())
+				.orElseThrow(() -> new RuntimeException("Conversation not found or access denied"));
+
+		List<MessageResponse> messageResponses = conversation.getMessages().stream()
+				.map(message -> MessageResponse.builder()
+						.id(message.getId())
+						.content(message.getContent())
+						.messageType(message.getMessageType())
+						.createdAt(message.getCreatedAt())
+						.openAiMessageId(message.getOpenAiMessageId())
+						.modelName(message.getModel().getName())
+						.build())
+				.toList();
+
+		return ConversationDetailResponse.builder()
+				.id(conversation.getId())
+				.title(conversation.getTitle())
+				.createdAt(conversation.getCreatedAt())
+				.endedAt(conversation.getEndedAt())
+				.messages(messageResponses)
+				.build();
+	}
+
     public ConversationSummaryResponse createConversation(CreateConversationRequest request, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -130,6 +176,8 @@ public class ChatService {
                 .id(conversation.getId())
                 .title(conversation.getTitle())
                 .createdAt(conversation.getCreatedAt())
+                .endedAt(conversation.getEndedAt())
+                .messageCount(0)
                 .build();
     }
 

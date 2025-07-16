@@ -1,6 +1,36 @@
 import httpClient from './api/httpClient';
 
 const chatService = {
+    // Obtener todas las conversaciones del usuario
+    getUserConversations: async () => {
+        try {
+            const response = await httpClient.get('/chat/conversations');
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Error fetching conversations');
+        }
+    },
+
+    // Obtener detalles de una conversación específica con sus mensajes
+    getConversationDetail: async (conversationId) => {
+        try {
+            const response = await httpClient.get(`/chat/conversations/${conversationId}`);
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Error fetching conversation detail');
+        }
+    },
+
+    // Crear una nueva conversación
+    createConversation: async (title) => {
+        try {
+            const response = await httpClient.post('/chat/conversation', { title });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Error creating conversation');
+        }
+    },
+
     sendMessage: async (messageData) => {
         try {
             const response = await httpClient.post('/chat/message', messageData);
