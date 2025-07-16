@@ -16,6 +16,7 @@ import com.openai.models.chat.completions.ChatCompletion;
 import com.openai.models.chat.completions.ChatCompletionChunk;
 import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import com.openai.models.chat.completions.ChatCompletionUserMessageParam;
+import com.openai.models.chat.completions.ChatCompletionAssistantMessageParam;
 import com.openai.core.http.StreamResponse;
 import com.requesttheai.backend.dto.ConversationSummaryResponse;
 import com.requesttheai.backend.dto.CreateConversationRequest;
@@ -74,6 +75,43 @@ public class ChatService {
 		);
 	}
 
+	// NEW METHOD: Build message history for OpenAI to maintain conversation memory
+	private ChatCompletionCreateParams.Builder buildChatCompletionParams(Long conversationId, String currentMessage, String modelName) {
+		ChatCompletionCreateParams.Builder paramsBuilder = ChatCompletionCreateParams.builder()
+			.model(ChatModel.of(modelName));
+
+		// If there's an existing conversation, load the message history
+		if (conversationId != null) {
+			List<Message> previousMessages = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
+			System.out.println("🧠 Loading " + previousMessages.size() + " previous messages for conversation memory");
+			
+			// Add all previous messages to maintain context
+			for (Message message : previousMessages) {
+				if (message.getMessageType() == MessageType.USER) {
+					paramsBuilder.addMessage(ChatCompletionUserMessageParam.builder()
+						.content(message.getContent())
+						.build());
+					System.out.println("💭 Added USER message to history: " + message.getContent().substring(0, Math.min(50, message.getContent().length())) + "...");
+				} else if (message.getMessageType() == MessageType.MODEL) {
+					paramsBuilder.addMessage(ChatCompletionAssistantMessageParam.builder()
+						.content(message.getContent())
+						.build());
+					System.out.println("💭 Added ASSISTANT message to history: " + message.getContent().substring(0, Math.min(50, message.getContent().length())) + "...");
+				}
+			}
+		} else {
+			System.out.println("🧠 No existing conversation, starting fresh");
+		}
+
+		// Add the current user message
+		paramsBuilder.addMessage(ChatCompletionUserMessageParam.builder()
+			.content(currentMessage)
+			.build());
+		System.out.println("💭 Added current USER message: " + currentMessage.substring(0, Math.min(50, currentMessage.length())) + "...");
+
+		return paramsBuilder;
+	}
+
     public ConversationSummaryResponse createConversation(CreateConversationRequest request, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -121,6 +159,13 @@ public class ChatService {
 					.orElseThrow(() -> new RuntimeException("Conversation not found"));
 		}
 
+		// FIXED: Build params with conversation history BEFORE saving current message
+		ChatCompletionCreateParams params = buildChatCompletionParams(
+			conversation.getId(), 
+			request.getContent(), 
+			request.getModelName()
+		).build();
+
 		Message userMessage = Message.builder()
             .content(request.getContent())
             .messageType(MessageType.USER)
@@ -128,13 +173,6 @@ public class ChatService {
             .model(model)
             .build();
     	messageRepository.save(userMessage);
-		
-		ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
-            .addMessage(ChatCompletionUserMessageParam.builder()
-                    .content(request.getContent())
-                    .build())
-            .model(ChatModel.of(request.getModelName()))
-            .build();
 
 		OpenAIClient client = buildClient();
 		ChatCompletion chatCompletion = client.chat().completions().create(params);
@@ -250,6 +288,14 @@ public class ChatService {
 					System.out.println("💬 Using existing conversation: " + conversation.getId());
 				}
 
+				// FIXED: Load conversation history BEFORE saving current message
+				ChatCompletionCreateParams params = buildChatCompletionParams(
+					conversation.getId(), 
+					request.getContent(), 
+					request.getModelName()
+				).build();
+				System.out.println("🔧 OpenAI params created with conversation history for model: " + request.getModelName());
+
 				Message userMessage = Message.builder()
 						.content(request.getContent())
 						.messageType(MessageType.USER)
@@ -267,15 +313,6 @@ public class ChatService {
 						.build();
 				System.out.println("📤 Sending start event: " + startChunk);
 				emitter.send(SseEmitter.event().data(startChunk));
-
-				// Create streaming request
-				ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
-						.addMessage(ChatCompletionUserMessageParam.builder()
-								.content(request.getContent())
-								.build())
-						.model(ChatModel.of(request.getModelName()))
-						.build();
-				System.out.println("🔧 OpenAI params created for model: " + request.getModelName());
 
 				// Validate model name before making request
 				String modelName = request.getModelName();

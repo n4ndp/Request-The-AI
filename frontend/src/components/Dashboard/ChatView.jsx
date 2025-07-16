@@ -85,11 +85,18 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
         console.log('📍 ChatView: AI message will be at index:', aiMessageIndex);
 
         try {
+            // Find the most recent AI message to get the conversationId
+            const lastAiMessage = messages.slice().reverse().find(msg => msg.sender === 'ai' && msg.conversationId);
+            const conversationId = lastAiMessage ? lastAiMessage.conversationId : null;
+            
+            console.log('🔍 ChatView: Looking for conversationId in messages:', messages.length);
+            console.log('💬 ChatView: Found conversationId:', conversationId);
+            
             chatService.sendMessageStream(
                 {
                     content: text,
                     modelName: selectedModel.name,
-                    conversationId: messages.length > 0 ? messages[0].conversationId : null,
+                    conversationId: conversationId,
                     previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
                 },
                 // onChunk callback
