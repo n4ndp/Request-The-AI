@@ -151,6 +151,7 @@
 
 .model-management .text-muted {
     font-style: italic;
+    color: #cfcfcf !important;
 }
 
 /* Mejorar contraste en inputs del modal - Selectores más específicos */

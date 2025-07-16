@@ -204,6 +204,7 @@ const Chat = () => {
                 show={showAddCreditsModal} 
                 onHide={handleCloseAddCreditsModal}
                 onCreditsAdded={handleCreditsAdded}
+                modelProvider={modelProvider}
             />
         </div>
     );

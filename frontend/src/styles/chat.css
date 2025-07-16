@@ -26,19 +26,25 @@
 } 
 */
 
+.chat-container.openai-theme {
+    --primary-color: #4caf50;
+    --primary-hover: #45a049;
+    --brand-color: #4caf50;
+    --icon-color: #4caf50;
+    --credits-bar-bg: #4caf50;
+    --gradient-color: 76, 175, 80;
+}
+
+.chat-container.anthropic-theme {
+    --primary-color: #ff8c00;
+    --primary-hover: #e67e00;
+    --brand-color: #ff8c00;
+    --icon-color: #ff8c00;
+    --credits-bar-bg: #ff8c00;
+    --gradient-color: 255, 140, 0;
+}
+
 .chat-view h1 {
     font-size: 2.5rem;
     font-weight: bold;
-}
-
-/* OpenAI Theme (Green) */
-.openai-theme {
-    --theme-color-primary: #10a37f;
-    --theme-color-secondary: #1a7f64;
-}
-
-/* Anthropic Theme (Orange) */
-.anthropic-theme {
-    --theme-color-primary: #d97706; /* A shade of orange */
-    --theme-color-secondary: #b45309;
 } 

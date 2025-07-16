@@ -320,7 +320,7 @@
     background-color: #2a2a2a;
     border: 1px solid #444;
     border-right: none;
-    color: #4caf50;
+    color: var(--primary-color, #4caf50);
     font-weight: 600;
 }
 
@@ -336,9 +336,9 @@
 
 .add-credits-modal .amount-input:focus {
     background-color: #2a2a2a;
-    border-color: #4caf50;
+    border-color: var(--primary-color, #4caf50);
     color: #ffffff;
-    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    box-shadow: 0 0 0 0.2rem var(--primary-color, #4caf50)40;
 }
 
 .add-credits-modal .amount-input::placeholder {
@@ -385,13 +385,13 @@
 .add-credits-modal .payment-note {
     margin-top: 1rem;
     padding: 0.75rem;
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: var(--primary-color, #4caf50)1a;
     border-radius: 6px;
-    border-left: 3px solid #4caf50;
+    border-left: 3px solid var(--primary-color, #4caf50);
 }
 
 .add-credits-modal .payment-note small {
-    color: #4caf50;
+    color: var(--primary-color, #4caf50);
     font-weight: 500;
 }
 
@@ -409,8 +409,8 @@
 }
 
 .add-credits-modal .confirm-btn {
-    background-color: #4caf50;
-    border-color: #4caf50;
+    background-color: var(--primary-color, #4caf50);
+    border-color: var(--primary-color, #4caf50);
     color: #ffffff;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
@@ -418,8 +418,8 @@
 }
 
 .add-credits-modal .confirm-btn:hover {
-    background-color: #45a049;
-    border-color: #45a049;
+    background-color: var(--primary-hover, #45a049);
+    border-color: var(--primary-hover, #45a049);
 }
 
 .add-credits-modal .confirm-btn:disabled {

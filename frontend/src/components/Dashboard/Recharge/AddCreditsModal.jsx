@@ -4,7 +4,7 @@ import { FaCreditCard, FaXmark, FaDollarSign } from 'react-icons/fa6';
 import rechargeService from '../../../services/rechargeServices';
 import '../../../styles/recharge.css';
 
-const AddCreditsModal = ({ show, onHide, onCreditsAdded }) => {
+const AddCreditsModal = ({ show, onHide, onCreditsAdded, modelProvider }) => {
     const [amount, setAmount] = useState('10');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -78,7 +78,7 @@ const AddCreditsModal = ({ show, onHide, onCreditsAdded }) => {
     };
 
     return (
-        <Modal show={show} onHide={handleClose} size="md" centered className="add-credits-modal">
+        <Modal show={show} onHide={handleClose} size="md" centered className={`add-credits-modal ${modelProvider}-theme`}>
             <Modal.Header className="modal-header">
                 <Modal.Title className="modal-title">
                     <FaCreditCard className="me-2" />

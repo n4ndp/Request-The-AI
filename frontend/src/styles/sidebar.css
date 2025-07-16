@@ -12,7 +12,7 @@
 }
 
 .sidebar {
-    width: 280px;
+    width: 280px; /* Ancho por defecto */
     background-color: var(--sidebar-bg);
     height: 100vh;
     display: flex;
@@ -56,7 +56,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: var(--theme-color-primary, #4caf50); /* Fallback color */
+    background-color: var(--primary-color, #4caf50); /* Fallback color */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -76,7 +76,7 @@
 }
 
 .new-chat-button {
-    background-color: var(--theme-color-primary, #4caf50);
+    background-color: var(--primary-color, #4caf50);
     color: var(--text-primary);
     border: none;
     border-radius: 8px;
@@ -146,7 +146,7 @@
 
 .history-item.active {
     background-color: var(--conversation-active);
-    border-left: 3px solid var(--theme-color-primary, #4caf50);
+    border-left: 3px solid var(--primary-color, #4caf50);
 }
 
 .delete-conversation-btn {
@@ -252,15 +252,16 @@
 
 .credits-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4ade80, #22c55e);
+    background: var(--credits-bar-bg, #4caf50); /* Usa la variable de tema, con un color por defecto */
     border-radius: 8px;
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    box-shadow: 0 0 10px var(--credits-bar-bg, #4caf50);
 }
 
 .credits-amount {
     font-size: 0.85rem;
     font-weight: 400;
-    color: var(--text-secondary);
+    color: #ffffff;
 }
 
 .sidebar-nav {
@@ -472,6 +473,6 @@
     }
     50% {
         background-color: var(--new-chat-hover);
-        box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        box-shadow: 0 0 10px var(--primary-color, #4caf50);
     }
 }

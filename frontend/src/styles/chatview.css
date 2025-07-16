@@ -17,20 +17,13 @@
     right: -25%;
     bottom: -25%;
     background: 
-        radial-gradient(ellipse at 30% 80%, rgba(76, 175, 80, 0.12) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 90%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 30% 80%, rgba(var(--gradient-color), 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 90%, rgba(var(--gradient-color), 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
     filter: blur(80px);
     pointer-events: none;
     z-index: 1;
     animation: floatBackground 25s ease-in-out infinite;
-}
-
-.chat-view.anthropic-theme::before {
-    background: 
-        radial-gradient(ellipse at 30% 80%, rgba(255, 140, 0, 0.12) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 90%, rgba(255, 140, 0, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
 }
 
 .chat-view::after {
@@ -65,21 +58,6 @@
 .chat-view > * {
     position: relative;
     z-index: 2;
-}
-
-/* Temas de colores */
-.chat-view.openai-theme {
-    --primary-color: #4caf50;
-    --primary-hover: #45a049;
-    --brand-color: #4caf50;
-    --icon-color: #4caf50;
-}
-
-.chat-view.anthropic-theme {
-    --primary-color: #ff8c00;
-    --primary-hover: #e67e00;
-    --brand-color: #ff8c00;
-    --icon-color: #ff8c00;
 }
 
 .model-selector-container {

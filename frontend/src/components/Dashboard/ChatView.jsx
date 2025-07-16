@@ -231,7 +231,7 @@ const ChatView = ({
     const ModelIcon = modelProvider === 'openai' ? FaBrain : FaWandMagicSparkles;
 
     return (
-        <div className={`chat-view ${modelProvider}-theme ${messages.length > 0 ? 'has-messages' : ''}`}>
+        <div className={`chat-view ${messages.length > 0 ? 'has-messages' : ''}`}>
             <div className="model-selector-container" ref={dropdownRef}>
                 <div className="model-selector" onClick={() => setDropdownOpen(!isDropdownOpen)}>
                     <div className={`model-button ${modelProvider}`}>
