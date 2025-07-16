@@ -447,12 +447,12 @@ public class ChatService {
 		Conversation conversation = conversationRepository.findByIdAndUserIdWithMessages(conversationId, user.getId())
 				.orElseThrow(() -> new RuntimeException("Conversation not found or access denied"));
 
-		// Manually delete usage records associated with each message
+		// Update usage records to set message reference to null, but keep user and model info intact
 		for (Message message : conversation.getMessages()) {
 			usageRepository.setNullMessageByMessageId(message.getId());
 		}
 
-		// Now, deleting the conversation should cascade to messages without integrity issues
+		// Delete the conversation (this will cascade to messages)
 		conversationRepository.delete(conversation);
 	}
 
@@ -464,6 +464,7 @@ public class ChatService {
         List<Conversation> conversations = conversationRepository.findByUserId(user.getId());
 
         for (Conversation conversation : conversations) {
+            // Update usage records to set message reference to null, but keep user and model info intact
             for (Message message : conversation.getMessages()) {
                 usageRepository.setNullMessageByMessageId(message.getId());
             }
@@ -614,6 +615,8 @@ public class ChatService {
 
 		Usage usage = Usage.builder()
             .message(aiMessage)
+            .user(user)
+            .modelName(model.getName())
             .tokens(totalTokens)
             .realAmount(realCost)
             .platformRevenue(platformRevenue)
@@ -870,6 +873,8 @@ public class ChatService {
 				// Save usage
 				Usage usage = Usage.builder()
 						.message(aiMessage)
+						.user(user)
+						.modelName(model.getName())
 						.tokens(totalTokens)
 						.realAmount(realCost)
 						.platformRevenue(platformRevenue)

@@ -41,18 +41,14 @@ public class UsageService {
     private UsageAdminResponse toUsageAdminResponse(Usage usage) {
         return UsageAdminResponse.builder()
             .id(usage.getId())
-            .username(usage.getMessage() != null && 
-                     usage.getMessage().getConversation() != null && 
-                     usage.getMessage().getConversation().getUser() != null ? 
-                     usage.getMessage().getConversation().getUser().getUsername() : "Unknown")
+            .username(usage.getUser() != null ? usage.getUser().getUsername() : "Unknown")
             .realAmount(usage.getRealAmount())
             .platformRevenue(usage.getPlatformRevenue())
             .totalAmount(usage.getTotalAmount())
             .status(usage.getStatus())
             .createdAt(usage.getCreatedAt())
             .tokens(usage.getTokens())
-            .modelName(usage.getMessage() != null && usage.getMessage().getModel() != null ? 
-                      usage.getMessage().getModel().getName() : "Unknown")
+            .modelName(usage.getModelName() != null ? usage.getModelName() : "Unknown")
             .build();
     }
 
@@ -62,8 +58,7 @@ public class UsageService {
             .totalAmount(usage.getTotalAmount())
             .createdAt(usage.getCreatedAt())
             .tokens(usage.getTokens())
-            .modelName(usage.getMessage() != null && usage.getMessage().getModel() != null ? 
-                      usage.getMessage().getModel().getName() : "Unknown")
+            .modelName(usage.getModelName() != null ? usage.getModelName() : "Unknown")
             .build();
     }
 } 

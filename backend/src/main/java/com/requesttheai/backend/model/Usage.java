@@ -33,7 +33,8 @@ import lombok.Setter;
     indexes = {
         @Index(name = "idx_usages_status", columnList = "status"),
         @Index(name = "idx_usages_created_at", columnList = "created_at"),
-        @Index(name = "idx_usages_total_amount", columnList = "total_amount")
+        @Index(name = "idx_usages_total_amount", columnList = "total_amount"),
+        @Index(name = "idx_usages_user_id", columnList = "user_id")
     })
 @Getter @Setter
 @NoArgsConstructor
@@ -72,6 +73,15 @@ public class Usage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id")
     private Message message;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(name = "model_name", nullable = false, length = 100)
+    @NotNull
+    private String modelName;
 
     @NotNull
     @Enumerated(EnumType.STRING)

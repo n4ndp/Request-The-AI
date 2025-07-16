@@ -20,18 +20,14 @@ public interface UsageRepository extends JpaRepository<Usage, Long> {
     // Consulta optimizada para admin - con JOIN FETCH para evitar N+1
     @Query("SELECT u FROM Usage u " +
            "LEFT JOIN FETCH u.message m " +
-           "LEFT JOIN FETCH m.conversation c " +
-           "LEFT JOIN FETCH c.user user " +
-           "LEFT JOIN FETCH m.model model " +
+           "LEFT JOIN FETCH u.user user " +
            "ORDER BY u.createdAt DESC")
     List<Usage> findAllWithDetailsForAdmin();
 
-    // Consulta optimizada para usuario específico
+    // Consulta optimizada para usuario específico - usando referencia directa al usuario
     @Query("SELECT u FROM Usage u " +
            "LEFT JOIN FETCH u.message m " +
-           "LEFT JOIN FETCH m.conversation c " +
-           "LEFT JOIN FETCH m.model model " +
-           "WHERE c.user.username = :username " +
+           "WHERE u.user.username = :username " +
            "ORDER BY u.createdAt DESC")
     List<Usage> findByUsernameWithDetails(@Param("username") String username);
 
@@ -42,9 +38,7 @@ public interface UsageRepository extends JpaRepository<Usage, Long> {
     // Consulta para obtener usages paginados para admin
     @Query("SELECT u FROM Usage u " +
            "LEFT JOIN FETCH u.message m " +
-           "LEFT JOIN FETCH m.conversation c " +
-           "LEFT JOIN FETCH c.user user " +
-           "LEFT JOIN FETCH m.model model " +
+           "LEFT JOIN FETCH u.user user " +
            "ORDER BY u.createdAt DESC")
     List<Usage> findAllWithDetailsPaginated();
 }
