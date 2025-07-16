@@ -484,3 +484,108 @@
 .add-credits-modal .spinner-border {
     animation: spin 1s linear infinite;
 }
+
+/* Estilos específicos para el modal de historial de uso - tema oscuro completo */
+.recharge-history-modal .card {
+    background-color: #2a2a2a !important;
+    border: 1px solid #444 !important;
+    color: #ffffff !important;
+}
+
+.recharge-history-modal .card-header {
+    background-color: #333 !important;
+    border-bottom: 1px solid #444 !important;
+    color: #ffffff !important;
+}
+
+.recharge-history-modal .card-body {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+
+.recharge-history-modal .text-center .card {
+    background-color: #2a2a2a !important;
+    border: 1px solid #444 !important;
+    transition: all 0.2s ease;
+}
+
+.recharge-history-modal .text-center .card:hover {
+    background-color: #333 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.recharge-history-modal .card h6 {
+    color: #a6a6a6 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.recharge-history-modal .card h5 {
+    color: #ffffff !important;
+    font-weight: 700;
+    margin: 0;
+}
+
+.recharge-history-modal .text-primary {
+    color: #4dabf7 !important;
+}
+
+.recharge-history-modal .text-success {
+    color: #51cf66 !important;
+}
+
+.recharge-history-modal .text-info {
+    color: #74c0fc !important;
+}
+
+.recharge-history-modal .badge {
+    background-color: #495057 !important;
+    color: #ffffff !important;
+}
+
+.recharge-history-modal .fw-bold {
+    color: #4dabf7 !important;
+}
+
+/* Estilos para la tabla responsive dentro del modal */
+.recharge-history-modal .table-responsive {
+    background-color: transparent !important;
+}
+
+.recharge-history-modal .table-responsive .table {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    margin-bottom: 0;
+}
+
+.recharge-history-modal .table-responsive .table th {
+    background-color: #333 !important;
+    color: #ffffff !important;
+    border-bottom: 2px solid #444 !important;
+    font-weight: 600;
+}
+
+.recharge-history-modal .table-responsive .table td {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #444 !important;
+}
+
+.recharge-history-modal .table-responsive .table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Mensaje cuando no hay datos */
+.recharge-history-modal .text-muted {
+    color: #a6a6a6 !important;
+}
+
+/* Alertas en tema oscuro */
+.recharge-history-modal .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+    color: #f8d7da !important;
+}

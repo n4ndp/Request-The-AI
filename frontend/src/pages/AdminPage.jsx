@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Nav, Alert } from 'react-bootstrap';
-import { FaUsers, FaUserPlus, FaEdit, FaTrash, FaCubes } from 'react-icons/fa';
+import { FaUsers, FaUserPlus, FaEdit, FaTrash, FaCubes, FaChartBar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import UserManagement from '../components/Admin/UserManagement';
 import ModelManagement from '../components/Admin/ModelManagement';
+import UsageManagement from '../components/Admin/UsageManagement';
 import '../styles/admin.css';
 
 const AdminPage = () => {
@@ -72,6 +73,16 @@ const AdminPage = () => {
                                             Gestión de Modelos
                                         </Nav.Link>
                                     </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link 
+                                            active={activeTab === 'usages'} 
+                                            onClick={() => setActiveTab('usages')}
+                                            className="d-flex align-items-center"
+                                        >
+                                            <FaChartBar className="me-2" />
+                                            Gestión de Usos
+                                        </Nav.Link>
+                                    </Nav.Item>
                                 </Nav>
                             </Card.Body>
                         </Card>
@@ -82,6 +93,7 @@ const AdminPage = () => {
                             <Card.Body>
                                 {activeTab === 'users' && <UserManagement />}
                                 {activeTab === 'models' && <ModelManagement />}
+                                {activeTab === 'usages' && <UsageManagement />}
                             </Card.Body>
                         </Card>
                     </Col>

@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/sidebar.css';
 import { FaRegCommentAlt } from 'react-icons/fa';
-import { FaPlus, FaPowerOff, FaWandMagicSparkles, FaSun, FaTrash, FaAngleLeft, FaDiamond, FaClockRotateLeft, FaChevronDown, FaUser } from 'react-icons/fa6';
+import { FaPlus, FaPowerOff, FaWandMagicSparkles, FaSun, FaTrash, FaAngleLeft, FaDiamond, FaClockRotateLeft, FaChevronDown, FaUser, FaChartBar } from 'react-icons/fa6';
 import chatService from '../../services/chatService';
 import Swal from 'sweetalert2';
 import UserModal from './UserModal';
 import RechargeHistoryModal from './Recharge/RechargeHistoryModal';
+import UsageHistoryModal from './Usage/UsageHistoryModal';
 import AddCreditsModal from './Recharge/AddCreditsModal';
 
 const Sidebar = ({ 
@@ -26,6 +27,7 @@ const Sidebar = ({
     const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
     const [showUserModal, setShowUserModal] = useState(false);
     const [showRechargeHistoryModal, setShowRechargeHistoryModal] = useState(false);
+    const [showUsageHistoryModal, setShowUsageHistoryModal] = useState(false);
     const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
     const [currentUserBalance, setCurrentUserBalance] = useState(user?.balance || 0);
     const userPanelRef = useRef(null);
@@ -46,6 +48,11 @@ const Sidebar = ({
 
     const handleViewRechargeHistory = () => {
         setShowRechargeHistoryModal(true);
+        setIsUserPanelOpen(false);
+    };
+
+    const handleViewUsageHistory = () => {
+        setShowUsageHistoryModal(true);
         setIsUserPanelOpen(false);
     };
 
@@ -270,6 +277,10 @@ const Sidebar = ({
                                 <FaClockRotateLeft />
                                 <span>Historial de Recargas</span>
                             </button>
+                            <button className="user-option" onClick={handleViewUsageHistory}>
+                                <FaChartBar />
+                                <span>Historial de Uso</span>
+                            </button>
                             <button className="user-option logout-option" onClick={handleLogoutClick}>
                                 <FaPowerOff />
                                 <span>Cerrar Sesión</span>
@@ -366,6 +377,10 @@ const Sidebar = ({
             <RechargeHistoryModal 
                 show={showRechargeHistoryModal} 
                 onHide={() => setShowRechargeHistoryModal(false)} 
+            />
+            <UsageHistoryModal 
+                show={showUsageHistoryModal} 
+                onHide={() => setShowUsageHistoryModal(false)} 
             />
             <AddCreditsModal 
                 show={showAddCreditsModal} 
