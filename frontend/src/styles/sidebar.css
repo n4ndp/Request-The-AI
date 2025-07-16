@@ -134,30 +134,42 @@
 }
 
 .credits-section {
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     background-color: var(--new-chat-bg);
-    border-radius: 8px;
+    border-radius: 12px;
+    text-align: left;
+    min-height: auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.credits-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+.credits-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
 }
 
 .credits-bar {
     width: 100%;
-    background-color: #555;
-    border-radius: 5px;
-    height: 10px;
+    background-color: #4a4a4a;
+    border-radius: 8px;
+    height: 12px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
 }
 
 .credits-bar-fill {
     height: 100%;
-    background-color: var(--theme-color-primary, #4caf50);
-    border-radius: 5px;
+    background: linear-gradient(90deg, #4ade80, #22c55e);
+    border-radius: 8px;
+    transition: width 0.3s ease;
+}
+
+.credits-amount {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-secondary);
 }
 
 .sidebar-nav {

@@ -172,15 +172,17 @@ const Sidebar = ({ isOpen, setIsOpen, user, onUserBalanceUpdate, highlightCredit
             <div className="sidebar-middle">
                 {isOpen && (
                     <div className="credits-section">
-                        <div className="credits-info">
+                        <div className="credits-title">
                             <span>Credits Remaining</span>
-                            <span>${credits.remaining.toFixed(2)} / ${credits.total.toFixed(2)}</span>
                         </div>
                         <div className="credits-bar">
                             <div
                                 className="credits-bar-fill"
                                 style={{ width: `${creditPercentage}%` }}
                             ></div>
+                        </div>
+                        <div className="credits-amount">
+                            <span>${credits.remaining.toFixed(2)} / ${credits.total.toFixed(2)}</span>
                         </div>
                     </div>
                 )}
