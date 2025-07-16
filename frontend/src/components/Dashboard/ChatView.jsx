@@ -14,6 +14,7 @@ const ChatView = ({
     modelProvider, 
     onInsufficientCredits, 
     userBalance,
+    onBalanceChange,
     currentConversation,
     initialMessages,
     onConversationCreated
@@ -103,7 +104,9 @@ const ChatView = ({
         });
 
         // Create an initial AI message that will be updated with streaming content
+        const tempId = `ai-msg-${Date.now()}`;
         const aiMessage = {
+            id: tempId,
             text: '',
             sender: 'ai',
             provider: modelProvider,
@@ -112,20 +115,11 @@ const ChatView = ({
             isStreaming: true
         };
         
-        setMessages(prevMessages => {
-            const newMessages = [...prevMessages, aiMessage];
-            console.log('🤖 ChatView: Added initial AI message, new count:', newMessages.length);
-            return newMessages;
-        });
+        setMessages(prevMessages => [...prevMessages, aiMessage]);
         
-        const aiMessageIndex = messages.length + 1; // +1 because we just added the user message
-        console.log('📍 ChatView: AI message will be at index:', aiMessageIndex);
-
         try {
             // Si no hay conversación actual, se creará una automáticamente en el backend
             const conversationId = currentConversation?.id || null;
-            
-            console.log('🔍 ChatView: Using conversationId:', conversationId);
             
             chatService.sendMessageStream(
                 {
@@ -136,87 +130,51 @@ const ChatView = ({
                 },
                 // onChunk callback
                 (chunk) => {
-                    console.log('📦 ChatView: Received chunk:', chunk);
-                    
                     if (chunk.type === 'start') {
-                        console.log('🟢 ChatView: Processing START chunk');
-                        setMessages(prevMessages => {
-                            const newMessages = [...prevMessages];
-                            if (newMessages[aiMessageIndex]) {
-                                newMessages[aiMessageIndex] = {
-                                    ...newMessages[aiMessageIndex],
-                                    conversationId: chunk.conversationId,
-                                    isStreaming: true
-                                };
-                                console.log('✅ ChatView: Updated AI message with conversationId:', chunk.conversationId);
-                            } else {
-                                console.error('❌ ChatView: AI message not found at index:', aiMessageIndex);
-                            }
-                            return newMessages;
-                        });
+                        setMessages(prevMessages => prevMessages.map(msg => 
+                            msg.id === tempId 
+                                ? { ...msg, conversationId: chunk.conversationId, isStreaming: true }
+                                : msg
+                        ));
 
-                        // Si no había conversación previa, notificar que se creó una nueva
                         if (!currentConversation && chunk.conversationId) {
-                            console.log('🆕 ChatView: New conversation created, notifying parent');
-                            // Crear objeto de conversación para notificar al padre
                             const newConversation = {
                                 id: chunk.conversationId,
                                 title: text.length > 40 ? text.substring(0, 40) + "..." : text,
                                 createdAt: new Date().toISOString()
                             };
-                            // Notificar al padre pero sin cambiar la vista actual
                             onConversationCreated(newConversation);
                         }
                     } else if (chunk.type === 'content') {
-                        console.log('📝 ChatView: Processing CONTENT chunk:', chunk.content);
-                        setMessages(prevMessages => {
-                            const newMessages = [...prevMessages];
-                            if (newMessages[aiMessageIndex]) {
-                                const currentText = newMessages[aiMessageIndex].text;
-                                newMessages[aiMessageIndex] = {
-                                    ...newMessages[aiMessageIndex],
-                                    text: currentText + chunk.content
-                                };
-                                console.log('✅ ChatView: Updated AI message text, new length:', newMessages[aiMessageIndex].text.length);
-                            } else {
-                                console.error('❌ ChatView: AI message not found at index for content update:', aiMessageIndex);
-                            }
-                            return newMessages;
-                        });
+                        setMessages(prevMessages => prevMessages.map(msg =>
+                            msg.id === tempId
+                                ? { ...msg, text: msg.text + chunk.content }
+                                : msg
+                        ));
                     } else if (chunk.type === 'end') {
-                        console.log('🏁 ChatView: Processing END chunk');
-                        setMessages(prevMessages => {
-                            const newMessages = [...prevMessages];
-                            if (newMessages[aiMessageIndex]) {
-                                newMessages[aiMessageIndex] = {
-                                    ...newMessages[aiMessageIndex],
-                                    conversationId: chunk.conversationId,
-                                    openAiMessageId: chunk.aiMessageId,
-                                    isStreaming: false
-                                };
-                                console.log('✅ ChatView: Finalized AI message');
-                            } else {
-                                console.error('❌ ChatView: AI message not found at index for end update:', aiMessageIndex);
-                            }
-                            return newMessages;
-                        });
+                        setMessages(prevMessages => prevMessages.map(msg =>
+                            msg.id === tempId
+                                ? { ...msg, 
+                                    conversationId: chunk.conversationId, 
+                                    openAiMessageId: chunk.aiMessageId, 
+                                    isStreaming: false 
+                                }
+                                : msg
+                        ));
+                        if (chunk.totalCost && onBalanceChange) {
+                            onBalanceChange(userBalance - chunk.totalCost);
+                        }
                     } else if (chunk.type === 'error') {
-                        console.error('❌ ChatView: Processing ERROR chunk:', chunk.error);
-                        setMessages(prevMessages => {
-                            const newMessages = [...prevMessages];
-                            if (newMessages[aiMessageIndex]) {
-                                newMessages[aiMessageIndex] = {
-                                    ...newMessages[aiMessageIndex],
-                                    text: 'Error: ' + chunk.error,
-                                    isStreaming: false,
-                                    isError: true
-                                };
-                                console.log('✅ ChatView: Updated AI message with error');
-                            } else {
-                                console.error('❌ ChatView: AI message not found at index for error update:', aiMessageIndex);
-                            }
-                            return newMessages;
-                        });
+                        setMessages(prevMessages => prevMessages.map(msg =>
+                            msg.id === tempId
+                                ? { ...msg, 
+                                    text: 'Error: ' + chunk.error, 
+                                    isStreaming: false, 
+                                    isError: true 
+                                }
+                                : msg
+                        ));
+
                         if (chunk.error.includes('Insufficient credits')) {
                             onInsufficientCredits();
                             Swal.fire({
@@ -230,19 +188,15 @@ const ChatView = ({
                 },
                 // onError callback
                 (error) => {
-                    console.error('💥 ChatView: Stream error:', error);
-                    setMessages(prevMessages => {
-                        const newMessages = [...prevMessages];
-                        if (newMessages[aiMessageIndex]) {
-                            newMessages[aiMessageIndex] = {
-                                ...newMessages[aiMessageIndex],
-                                text: 'Error: Failed to send message. Please try again.',
-                                isStreaming: false,
-                                isError: true
-                            };
-                        }
-                        return newMessages;
-                    });
+                    setMessages(prevMessages => prevMessages.map(msg =>
+                        msg.id === tempId
+                            ? { ...msg, 
+                                text: 'Error: Failed to send message. Please try again.', 
+                                isStreaming: false, 
+                                isError: true 
+                            }
+                            : msg
+                    ));
                     
                     if (error.message.includes('Insufficient credits')) {
                         onInsufficientCredits();
@@ -256,23 +210,21 @@ const ChatView = ({
                 },
                 // onComplete callback
                 () => {
-                    console.log('🏁 ChatView: Stream completed callback triggered');
+                    setMessages(prevMessages => prevMessages.map(msg =>
+                        msg.id === tempId ? { ...msg, isStreaming: false } : msg
+                    ));
                 }
             );
         } catch (error) {
-            console.error('💥 ChatView: Error starting stream:', error);
-            setMessages(prevMessages => {
-                const newMessages = [...prevMessages];
-                if (newMessages[aiMessageIndex]) {
-                    newMessages[aiMessageIndex] = {
-                        ...newMessages[aiMessageIndex],
-                        text: 'Error: Failed to start streaming. Please try again.',
-                        isStreaming: false,
-                        isError: true
-                    };
-                }
-                return newMessages;
-            });
+            setMessages(prevMessages => prevMessages.map(msg =>
+                msg.id === tempId
+                    ? { ...msg, 
+                        text: 'Error: Failed to start streaming. Please try again.', 
+                        isStreaming: false, 
+                        isError: true 
+                    }
+                    : msg
+            ));
         }
     };
 

@@ -172,9 +172,9 @@ const Chat = () => {
 
     return (
         <div className={`chat-container ${modelProvider}-theme`}>
-                        <Sidebar 
-                isOpen={isSidebarOpen}
-                setIsOpen={setSidebarOpen}
+            <Sidebar 
+                isOpen={isSidebarOpen} 
+                setIsOpen={setSidebarOpen} 
                 user={user}
                 onUserBalanceUpdate={updateUserBalance}
                 highlightCredits={highlightCredits}
@@ -193,6 +193,7 @@ const Chat = () => {
                     modelProvider={modelProvider}
                     onInsufficientCredits={handleInsufficientCredits}
                     userBalance={user?.balance || 0}
+                    onBalanceChange={updateUserBalance}
                     currentConversation={currentConversation}
                     initialMessages={conversationMessages}
                     onConversationCreated={handleConversationCreated}
