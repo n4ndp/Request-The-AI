@@ -10,67 +10,89 @@ Este fix resuelve dos problemas importantes:
 ## Cambios realizados
 
 ### 1. Entidad Usage actualizada
-- Agregada referencia directa al Usuario (`user_id`)
-- Agregado campo para nombre del modelo (`model_name`)
-- Los registros de uso ahora son independientes de las conversaciones eliminadas
+- ✅ Agregada referencia directa al Usuario (`user_id`)
+- ✅ Agregado campo para nombre del modelo (`model_name`)
+- ✅ Los registros de uso ahora son independientes de las conversaciones eliminadas
 
 ### 2. Consultas optimizadas
-- Las consultas ya no dependen de la cadena Message -> Conversation -> User
-- Usan referencias directas para mejor rendimiento
+- ✅ Las consultas ya no dependen de la cadena Message → Conversation → User
+- ✅ Usan referencias directas para mejor rendimiento
 
 ### 3. Lógica de eliminación mejorada
-- Los registros de uso se mantienen aunque se eliminen conversaciones
-- La información del usuario y modelo se conserva
+- ✅ Los registros de uso se mantienen aunque se eliminen conversaciones
+- ✅ La información del usuario y modelo se conserva
+
+### 4. Integración en el backend
+- ✅ **Esquema automático**: Hibernate maneja automáticamente los cambios de esquema
+- ✅ **data.sql actualizado**: Incluye migración de datos existentes y modelos actualizados
+- ✅ **Sin archivos separados**: Todo integrado en el backend
 
 ## Instrucciones de aplicación
 
-### Paso 1: Aplicar la migración SQL
-
-```bash
-# Desde el directorio del proyecto
-mysql -u [usuario] -p [nombre_base_datos] < backend/add_user_model_to_usage.sql
-```
-
-### Paso 2: Reiniciar la aplicación
+### Paso 1: Reiniciar la aplicación
 
 ```bash
 # Parar la aplicación si está corriendo
 docker-compose down
 
-# Reconstruir y iniciar
+# Reconstruir y iniciar (esto aplicará automáticamente todos los cambios)
 docker-compose up --build
 ```
 
-### Paso 3: Verificar que funciona
+### Paso 2: Verificar que funciona
 
 1. **Elimina una conversación** y verifica que tu historial de uso se mantiene
 2. **En el panel de admin**, verifica que ya no aparece "Unknown" en los registros
 
-## Verificación de la migración
+## Qué sucede automáticamente
 
-Puedes verificar que la migración se aplicó correctamente ejecutando:
+### Durante el inicio de la aplicación:
+
+1. **Hibernate actualiza el esquema**:
+   - Agrega columnas `user_id` y `model_name` a la tabla `usages`
+   - Crea índices para optimizar consultas
+
+2. **data.sql se ejecuta**:
+   - Actualiza modelos con nombres correctos
+   - Migra datos existentes de Usage (pobla `user_id` y `model_name`)
+   - Corrige información de proveedores (OpenAI en lugar de Anthropic)
+
+3. **El sistema queda actualizado**:
+   - Historial de uso permanente e independiente
+   - Usuarios siempre visibles en panel admin
+
+## Verificación
+
+Puedes verificar que todo funcionó correctamente:
 
 ```sql
-DESCRIBE usages;
+-- Ver la estructura actualizada de usages
+\d usages
+
+-- Verificar que los datos se migraron correctamente
+SELECT user_id, model_name, COUNT(*) 
+FROM usages 
+WHERE user_id IS NOT NULL 
+GROUP BY user_id, model_name;
+
+-- Ver modelos actualizados
+SELECT name, provider, description FROM models ORDER BY name;
 ```
 
-Deberías ver las nuevas columnas:
-- `user_id` (BIGINT NOT NULL)
-- `model_name` (VARCHAR(100) NOT NULL)
+## Beneficios de esta integración
 
-## Notas importantes
-
-- ✅ **Compatibilidad hacia atrás**: Los datos existentes se migran automáticamente
-- ✅ **Sin pérdida de datos**: Todo el historial existente se preserva
-- ✅ **Mejor rendimiento**: Las consultas son más eficientes
-- ✅ **Más robusto**: El sistema es menos propenso a errores de integridad
+- 🔄 **Automático**: No requiere migración manual
+- 🛡️ **Seguro**: Hibernate maneja los cambios de esquema de forma segura
+- 📦 **Integrado**: Todo en un solo lugar, fácil de mantener
+- 🔄 **Retrocompatible**: Migra automáticamente datos existentes
+- 🚀 **Más rápido**: Una sola operación en lugar de múltiples pasos
 
 ## En caso de problemas
 
 Si encuentras algún problema:
 
-1. Verifica que la migración se aplicó correctamente
-2. Revisa los logs de la aplicación
-3. Asegúrate de que no hay datos inconsistentes en la base de datos
+1. **Revisa los logs de la aplicación** para ver si hay errores de Hibernate
+2. **Verifica la conexión a la base de datos** en `application.properties`
+3. **Asegúrate de que la base de datos esté funcionando** antes de iniciar la app
 
-El fix garantiza que tu historial de uso será permanente e independiente de las conversaciones eliminadas. 
+El fix ahora está completamente integrado en tu backend y se aplica automáticamente al iniciar la aplicación! 🎉 
