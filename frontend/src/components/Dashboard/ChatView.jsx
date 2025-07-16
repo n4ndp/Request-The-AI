@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ChatInput from './ChatInput';
 import Message from './Message';
+import InsufficientCreditsModal from './InsufficientCreditsModal';
 import { FaBrain, FaWandMagicSparkles, FaChevronDown } from 'react-icons/fa6';
 import '../../styles/chatview.css';
 import chatService from '../../services/chatService';
 import Swal from 'sweetalert2';
 
-const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsufficientCredits }) => {
+const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsufficientCredits, userBalance }) => {
     const [messages, setMessages] = useState([]);
     const [isDropdownOpen, setDropdownOpen] = useState(false);
+    const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
     const messageListRef = useRef(null);
     const dropdownRef = useRef(null);
 
@@ -54,9 +56,22 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
         setDropdownOpen(false);
     };
 
+    const handleAddCredits = () => {
+        // Cerrar el modal de créditos insuficientes y disparar el evento para abrir el modal de recarga
+        setShowInsufficientCreditsModal(false);
+        onInsufficientCredits();
+    };
+
     const handleSendMessage = async (text) => {
         console.log('🚀 ChatView: Starting to send message:', text);
         console.log('📊 ChatView: Current messages count:', messages.length);
+        
+        // Verificar si el usuario tiene créditos suficientes antes de enviar
+        if (userBalance <= 0) {
+            console.log('❌ ChatView: Insufficient credits, showing modal');
+            setShowInsufficientCreditsModal(true);
+            return;
+        }
         
         const userMessage = { text, sender: 'user' };
         setMessages(prevMessages => {
@@ -278,6 +293,13 @@ const ChatView = ({ models, selectedModel, onModelChange, modelProvider, onInsuf
             </div>
             
             <ChatInput onSendMessage={handleSendMessage} modelProvider={modelProvider} />
+            
+            <InsufficientCreditsModal 
+                show={showInsufficientCreditsModal}
+                onHide={() => setShowInsufficientCreditsModal(false)}
+                userBalance={userBalance}
+                onAddCredits={handleAddCredits}
+            />
         </div>
     );
 };

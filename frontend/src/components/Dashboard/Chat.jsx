@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import ChatView from './ChatView';
+import AddCreditsModal from './Recharge/AddCreditsModal';
 import userService from '../../services/userService';
 import modelService from '../../services/modelService';
 import '../../styles/chat.css';
@@ -13,6 +14,7 @@ const Chat = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [highlightCredits, setHighlightCredits] = useState(false);
+    const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
 
     useEffect(() => {
         const fetchModels = async () => {
@@ -74,9 +76,22 @@ const Chat = () => {
 
     const handleInsufficientCredits = () => {
         setHighlightCredits(true);
+        setShowAddCreditsModal(true);
         setTimeout(() => {
             setHighlightCredits(false);
         }, 3000);
+    };
+
+    const handleCreditsAdded = (result) => {
+        // Actualizar el balance del usuario
+        if (result && result.balance !== undefined) {
+            updateUserBalance(result.balance);
+        }
+        setShowAddCreditsModal(false);
+    };
+
+    const handleCloseAddCreditsModal = () => {
+        setShowAddCreditsModal(false);
     };
 
     if (loading && !user) { // Adjusted loading condition
@@ -99,8 +114,15 @@ const Chat = () => {
                     onModelChange={handleModelChange}
                     modelProvider={modelProvider}
                     onInsufficientCredits={handleInsufficientCredits}
+                    userBalance={user?.balance || 0}
                 />
             </div>
+            
+            <AddCreditsModal 
+                show={showAddCreditsModal} 
+                onHide={handleCloseAddCreditsModal}
+                onCreditsAdded={handleCreditsAdded}
+            />
         </div>
     );
 };
