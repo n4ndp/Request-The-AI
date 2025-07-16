@@ -2,25 +2,6 @@
 -- INICIALIZACIÓN Y ACTUALIZACIÓN DE DATOS PARA REQUEST THE AI
 -- ===================================================================
 
--- -------------------------------------------------------------------
--- MODELOS: Insertar y actualizar modelos de OpenAI
--- -------------------------------------------------------------------
-
--- Actualizar modelos existentes con nombres incorrectos
-UPDATE models 
-SET name = 'gpt-4o-mini', 
-    provider = 'OpenAI',
-    description = 'Faster, more affordable reasoning model',
-    updated_at = NOW()
-WHERE name = 'o4-mini-2025-04-16';
-
-UPDATE models 
-SET name = 'gpt-4o', 
-    provider = 'OpenAI',
-    description = 'Flagship GPT model for complex tasks',
-    updated_at = NOW()
-WHERE name = 'gpt-4.1-2025-04-14';
-
 -- Insertar/actualizar modelos principales
 INSERT INTO models (name, price_input, price_output, provider, description, profit_margin, created_at, updated_at) 
 VALUES 
@@ -46,7 +27,7 @@ ON CONFLICT (name) DO UPDATE SET
 
 INSERT INTO models (name, price_input, price_output, provider, description, profit_margin, created_at, updated_at) 
 VALUES 
-('gpt-4o', 0.0015, 0.0014, 'OpenAI', 'Flagship GPT model for complex tasks', 0.20, NOW(), NOW())
+('gpt-4o', 0.0015, 0.0014, 'Anthropic', 'Flagship GPT model for complex tasks', 0.20, NOW(), NOW())
 ON CONFLICT (name) DO UPDATE SET 
     price_input = EXCLUDED.price_input,
     price_output = EXCLUDED.price_output,
