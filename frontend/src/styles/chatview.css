@@ -512,12 +512,7 @@
 }
 
 .welcome-title {
-    background: linear-gradient(45deg, rgba(var(--gradient-color), 1), rgba(var(--gradient-color), 0.7));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-size: 200% 200%;
-    animation: gradientShift 8s ease-in-out infinite;
+    color: #f5f5dc; /* Color hueso */
     font-size: 3rem;
     font-weight: bold;
     margin-bottom: 1rem;
@@ -725,25 +720,25 @@
 .image-select-button {
     position: absolute;
     right: 4.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
+    background: #4a4a4a;
+    color: #e0e0e0;
+    border: 1px solid #666;
+    border-radius: 8px;
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-size: 0.9rem;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .image-select-button:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: #5a5a5a;
+    color: #ffffff;
+    border-color: #888;
+    transform: scale(1.05);
 }
 
 .send-button {
