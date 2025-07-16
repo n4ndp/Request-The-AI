@@ -382,6 +382,48 @@
     opacity: 0.9;
 }
 
+/* Mejoras de contraste para texto muted en historial de recargas */
+.recharge-history .text-muted,
+.recharge-history-modal .text-muted,
+.recharge-container .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+.recharge-history-modal .history-summary .text-muted {
+    color: #ffffff !important;
+    opacity: 0.9;
+}
+
+/* Asegurar que el texto muted tenga buen contraste en todos los contextos de recargas */
+.recharge-history .no-records .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+.recharge-history-modal .no-records .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+/* Mejoras de contraste para texto muted en modal de agregar créditos */
+.add-credits-modal .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+.add-credits-modal .payment-note .text-muted {
+    color: #ffffff !important;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+/* También para el modal de créditos insuficientes */
+.add-credits-modal .current-balance-display .text-muted {
+    color: #ffffff !important;
+    opacity: 0.9;
+}
+
 .add-credits-modal .payment-note {
     margin-top: 1rem;
     padding: 0.75rem;
