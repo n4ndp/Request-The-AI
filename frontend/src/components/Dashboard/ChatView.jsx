@@ -174,9 +174,14 @@ const ChatView = ({
                             onConversationCreated(newConversation);
                         }
                     } else if (chunk.type === 'content') {
+                        console.log('📝 Adding content chunk:', chunk.content);
                         setMessages(prevMessages => prevMessages.map(msg =>
                             msg.id === tempId
-                                ? { ...msg, text: msg.text + chunk.content }
+                                ? { 
+                                    ...msg, 
+                                    text: msg.text + chunk.content,
+                                    isStreaming: true 
+                                }
                                 : msg
                         ));
                     } else if (chunk.type === 'end') {

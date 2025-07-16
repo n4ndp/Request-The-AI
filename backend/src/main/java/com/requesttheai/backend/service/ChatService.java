@@ -242,6 +242,123 @@ public class ChatService {
 		return "No response from OpenAI";
 	}
 
+	// Método para hacer llamadas directas a OpenAI API con soporte multimodal Y STREAMING SIMULADO
+	private String callOpenAIDirectlyWithStreaming(SendMessageRequest request, List<Message> conversationHistory, String modelName, SseEmitter emitter) throws Exception {
+		// Construir la request JSON manualmente
+		ObjectNode requestJson = objectMapper.createObjectNode();
+		requestJson.put("model", modelName);
+		requestJson.put("max_tokens", 1000);
+		requestJson.put("temperature", 0.7);
+		
+		// Construir array de mensajes
+		ArrayNode messagesArray = objectMapper.createArrayNode();
+		
+		// Agregar historial de conversación
+		if (conversationHistory != null) {
+			for (Message msg : conversationHistory) {
+				ObjectNode messageObj = objectMapper.createObjectNode();
+				messageObj.put("role", msg.getMessageType() == MessageType.USER ? "user" : "assistant");
+				messageObj.put("content", msg.getContent());
+				messagesArray.add(messageObj);
+			}
+		}
+		
+		// Agregar mensaje actual
+		ObjectNode currentMessage = objectMapper.createObjectNode();
+		currentMessage.put("role", "user");
+		
+		if (request.isMultimodal()) {
+			// Para contenido multimodal, usar array de content parts
+			ArrayNode contentArray = objectMapper.createArrayNode();
+			
+			for (MessageContent part : request.getMultimodalContent()) {
+				ObjectNode contentPart = objectMapper.createObjectNode();
+				
+				if ("text".equals(part.getType())) {
+					contentPart.put("type", "text");
+					contentPart.put("text", part.getText());
+				} else if ("image_url".equals(part.getType()) && part.getImageUrl() != null) {
+					contentPart.put("type", "image_url");
+					ObjectNode imageUrl = objectMapper.createObjectNode();
+					imageUrl.put("url", part.getImageUrl().getUrl());
+					if (part.getImageUrl().getDetail() != null) {
+						imageUrl.put("detail", part.getImageUrl().getDetail());
+					}
+					contentPart.set("image_url", imageUrl);
+				}
+				
+				contentArray.add(contentPart);
+			}
+			
+			currentMessage.set("content", contentArray);
+		} else {
+			currentMessage.put("content", request.getContent());
+		}
+		
+		messagesArray.add(currentMessage);
+		requestJson.set("messages", messagesArray);
+		
+		// Configurar headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", "Bearer " + apiKey);
+		headers.set("Content-Type", "application/json");
+		
+		// Hacer la llamada
+		HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(requestJson), headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+			"https://api.openai.com/v1/chat/completions",
+			HttpMethod.POST,
+			entity,
+			String.class
+		);
+		
+		// Parsear respuesta
+		JsonNode responseJson = objectMapper.readTree(response.getBody());
+		JsonNode choices = responseJson.get("choices");
+		String fullResponse = "No response from OpenAI";
+		
+		if (choices != null && choices.size() > 0) {
+			JsonNode firstChoice = choices.get(0);
+			JsonNode message = firstChoice.get("message");
+			if (message != null) {
+				JsonNode content = message.get("content");
+				if (content != null) {
+					fullResponse = content.asText();
+				}
+			}
+		}
+		
+		// 🚀 SIMULAR STREAMING: Enviar la respuesta en chunks pequeños con delays
+		System.out.println("🖼️ Simulating streaming for multimodal content...");
+		String[] words = fullResponse.split(" ");
+		StringBuilder currentChunk = new StringBuilder();
+		
+		for (int i = 0; i < words.length; i++) {
+			currentChunk.append(words[i]).append(" ");
+			
+			// Enviar chunk cada 3-5 palabras para simular streaming
+			if ((i + 1) % 4 == 0 || i == words.length - 1) {
+				try {
+					StreamMessageChunk contentChunk = StreamMessageChunk.builder()
+							.type("content")
+							.content(currentChunk.toString())
+							.build();
+					System.out.println("📤 Sending multimodal chunk: " + contentChunk.getContent());
+					emitter.send(SseEmitter.event().data(contentChunk));
+					
+					// Pequeño delay para simular el streaming natural
+					Thread.sleep(100);
+					currentChunk.setLength(0);
+				} catch (Exception e) {
+					System.err.println("❌ Error sending multimodal chunk: " + e.getMessage());
+					throw e;
+				}
+			}
+		}
+		
+		return fullResponse;
+	}
+
 	// UPDATED METHOD: Build message history for OpenAI to maintain conversation memory with multimodal support
 	private ChatCompletionCreateParams.Builder buildChatCompletionParams(Long conversationId, SendMessageRequest request, String modelName) {
 		ChatCompletionCreateParams.Builder paramsBuilder = ChatCompletionCreateParams.builder()
@@ -614,21 +731,14 @@ public class ChatService {
 				
 				try {
 					if (request.isMultimodal()) {
-						// Para contenido multimodal, usar llamada directa (sin streaming por simplicidad)
-						System.out.println("🖼️ Processing multimodal content...");
+						// Para contenido multimodal, usar llamada directa CON STREAMING SIMULADO
+						System.out.println("🖼️ Processing multimodal content with streaming...");
 						List<Message> conversationHistory = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId());
 						// Remover el último mensaje que acabamos de agregar
 						conversationHistory = conversationHistory.subList(0, Math.max(0, conversationHistory.size() - 1));
 						
-						aiText = callOpenAIDirectly(request, conversationHistory, request.getModelName());
+						aiText = callOpenAIDirectlyWithStreaming(request, conversationHistory, request.getModelName(), emitter);
 						System.out.println("🖼️ Response from direct OpenAI call: " + aiText.substring(0, Math.min(100, aiText.length())) + "...");
-						
-						// Enviar la respuesta completa como un solo chunk
-						StreamMessageChunk contentChunk = StreamMessageChunk.builder()
-								.type("content")
-								.content(aiText)
-								.build();
-						emitter.send(SseEmitter.event().data(contentChunk));
 						
 					} else {
 						// Para contenido de solo texto, usar streaming normal

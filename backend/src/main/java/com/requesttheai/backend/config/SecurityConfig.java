@@ -75,12 +75,16 @@ public class SecurityConfig {
             "Authorization",
             "Content-Type",
             "X-Requested-With",
-            "Accept"
+            "Accept",
+            "Cache-Control",
+            "Connection"
         ));
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
             "X-Custom-Header",
-            "Content-Type"
+            "Content-Type",
+            "Cache-Control",
+            "Connection"
         ));
         configuration.setMaxAge(3600L);
 
