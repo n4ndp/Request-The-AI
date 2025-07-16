@@ -155,15 +155,13 @@ const Chat = () => {
 
     // Función para manejar cuando se envía un mensaje en una nueva conversación
     const handleConversationCreated = (newConversation) => {
+        console.log('🔄 New conversation created:', newConversation);
+        
+        // Actualizar currentConversation inmediatamente
+        setCurrentConversation(newConversation);
+        
         // Refrescar la lista de conversaciones para mostrar la nueva en el sidebar
         fetchConversations();
-        
-        // Actualizar currentConversation después de un pequeño delay para no interrumpir el flujo del chat
-        setTimeout(() => {
-            if (!currentConversation) {
-                setCurrentConversation(newConversation);
-            }
-        }, 500);
     };
 
     if (loading && !user) {

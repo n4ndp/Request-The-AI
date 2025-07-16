@@ -156,9 +156,19 @@ const ChatView = ({
                         ));
 
                         if (!currentConversation && chunk.conversationId) {
+                            // Crear título apropiado para el tipo de mensaje
+                            let title;
+                            if (multimodalContent) {
+                                const textPart = multimodalContent.find(part => part.type === 'text');
+                                title = textPart ? textPart.text : 'Image conversation';
+                            } else {
+                                title = text || 'New conversation';
+                            }
+                            
+                            const shortTitle = title.length > 40 ? title.substring(0, 40) + "..." : title;
                             const newConversation = {
                                 id: chunk.conversationId,
-                                title: text.length > 40 ? text.substring(0, 40) + "..." : text,
+                                title: shortTitle,
                                 createdAt: new Date().toISOString()
                             };
                             onConversationCreated(newConversation);
