@@ -176,6 +176,21 @@ public class ChatService {
 		conversationRepository.delete(conversation);
 	}
 
+    @Transactional
+    public void deleteAllConversations(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        List<Conversation> conversations = conversationRepository.findByUserId(user.getId());
+
+        for (Conversation conversation : conversations) {
+            for (Message message : conversation.getMessages()) {
+                usageRepository.setNullMessageByMessageId(message.getId());
+            }
+            conversationRepository.delete(conversation);
+        }
+    }
+
     public ConversationSummaryResponse createConversation(CreateConversationRequest request, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));

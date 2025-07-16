@@ -16,6 +16,8 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Query("SELECT c FROM Conversation c WHERE c.user.id = :userId ORDER BY c.createdAt DESC")
     List<Conversation> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
+    List<Conversation> findByUserId(Long userId);
+
     @Query("SELECT c FROM Conversation c LEFT JOIN FETCH c.messages WHERE c.id = :conversationId AND c.user.id = :userId")
     Optional<Conversation> findByIdAndUserIdWithMessages(@Param("conversationId") Long conversationId, @Param("userId") Long userId);
 

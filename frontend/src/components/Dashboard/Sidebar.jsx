@@ -129,6 +129,49 @@ const Sidebar = ({
         }
     };
 
+    const handleClearAllConversations = async () => {
+        const result = await Swal.fire({
+            title: '¿Eliminar todas las conversaciones?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Eliminar todo',
+            cancelButtonText: 'Cancelar',
+            background: '#2a2a2a',
+            color: '#ffffff'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await chatService.deleteAllConversations();
+                onNewChat(); // Reset to new chat view
+                if (onConversationDeleted) {
+                    onConversationDeleted(null); // Notify parent to refresh all
+                }
+                Swal.fire({
+                    title: '¡Eliminadas!',
+                    text: 'Todas las conversaciones han sido eliminadas.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: '#2a2a2a',
+                    color: '#ffffff'
+                });
+            } catch (error) {
+                console.error('Error clearing all conversations:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudieron eliminar las conversaciones. Inténtalo de nuevo.',
+                    icon: 'error',
+                    background: '#2a2a2a',
+                    color: '#ffffff'
+                });
+            }
+        }
+    };
+
     // Determinar el tipo de cuenta basado en el balance
     const getAccountType = (balance) => {
         if (balance >= 100) return 'Premium account';
@@ -309,9 +352,9 @@ const Sidebar = ({
                     <a href="#" className="nav-item">
                         <FaSun /> {isOpen && <span>Explore GPTs</span>}
                     </a>
-                    <a href="#" className="nav-item">
+                    <button onClick={handleClearAllConversations} className="nav-item">
                         <FaTrash /> {isOpen && <span>Clear all conversations</span>}
-                    </a>
+                    </button>
                 </nav>
             </div>
 

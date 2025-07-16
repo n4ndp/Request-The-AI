@@ -57,6 +57,13 @@ public class ChatController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/conversations")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> deleteAllConversations(@AuthenticationPrincipal UserDetails userDetails) {
+        chatService.deleteAllConversations(userDetails.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/conversation")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<ConversationSummaryResponse> createConversation(

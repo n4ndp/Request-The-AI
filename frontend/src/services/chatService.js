@@ -160,6 +160,16 @@ const chatService = {
             console.error('Error deleting conversation:', error);
             throw new Error(error.response?.data?.message || 'Error al eliminar la conversación');
         }
+    },
+
+    deleteAllConversations: async () => {
+        try {
+            await httpClient.delete('/chat/conversations');
+            return true;
+        } catch (error) {
+            console.error('Error deleting all conversations:', error);
+            throw new Error(error.response?.data?.message || 'Error al eliminar todas las conversaciones');
+        }
     }
 };
 

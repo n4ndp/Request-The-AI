@@ -281,6 +281,11 @@
     font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
+    background: transparent;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
 }
 
 .nav-item:hover {
