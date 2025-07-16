@@ -142,6 +142,7 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     font-size: 0.9rem;
+    position: relative;
 }
 
 .model-option:hover {
@@ -152,6 +153,184 @@
     background-color: var(--primary-color);
     color: white;
     font-weight: 500;
+}
+
+.model-option-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.model-name {
+    flex: 1;
+}
+
+.image-support-icon {
+    color: #4ade80;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Tooltip Styles */
+.model-tooltip {
+    position: absolute;
+    right: calc(100% + 10px);
+    top: 0;
+    transform: none;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    width: 280px;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: tooltipFadeIn 0.2s ease-out;
+    pointer-events: none;
+}
+
+.model-tooltip::before {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 20px;
+    transform: none;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 6px solid rgba(20, 20, 20, 0.95);
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.tooltip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.provider-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.tooltip-description {
+    margin-bottom: 0.75rem;
+}
+
+.tooltip-description p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.tooltip-pricing {
+    margin-bottom: 0.75rem;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.price-item:last-child {
+    margin-bottom: 0;
+}
+
+.price-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.price-value {
+    font-size: 0.8rem;
+    color: #4ade80;
+    font-weight: 600;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.tooltip-features {
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feature-icon {
+    font-size: 0.8rem;
+}
+
+.feature-icon.supported {
+    color: #4ade80;
+}
+
+.feature-icon.not-supported {
+    color: #ef4444;
+}
+
+.feature-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.feature-text.supported {
+    color: #4ade80;
+}
+
+.feature-text.not-supported {
+    color: #ef4444;
+}
+
+/* Responsive adjustments for tooltip */
+@media (max-width: 768px) {
+    .model-tooltip {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 320px;
+        z-index: 10000;
+    }
+    
+    .model-tooltip::before {
+        display: none;
+    }
 }
 
 .message-list {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ChatInput from './ChatInput';
 import Message from './Message';
 import InsufficientCreditsModal from './InsufficientCreditsModal';
-import { FaBrain, FaWandMagicSparkles, FaChevronDown } from 'react-icons/fa6';
+import { FaBrain, FaWandMagicSparkles, FaChevronDown, FaImage, FaInfoCircle } from 'react-icons/fa6';
 import '../../styles/chatview.css';
 import chatService from '../../services/chatService';
 import Swal from 'sweetalert2';
@@ -22,6 +22,7 @@ const ChatView = ({
     const [messages, setMessages] = useState([]);
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+    const [hoveredModelId, setHoveredModelId] = useState(null);
     const messageListRef = useRef(null);
     const dropdownRef = useRef(null);
 
@@ -263,6 +264,69 @@ const ChatView = ({
 
     const ModelIcon = modelProvider === 'openai' ? FaBrain : FaWandMagicSparkles;
 
+    // Función para determinar si un modelo acepta imágenes
+    const supportsImages = (modelName) => {
+        const imageModels = [
+            'gpt-4o', 'gpt-4o-mini', 'gpt-4-vision', 'gpt-4-turbo', 
+            'claude-3-sonnet', 'claude-3-haiku', 'claude-3-opus',
+            'gemini-pro-vision', 'gemini-1.5-pro', 'gemini-1.5-flash',
+            'llama-3.1-8b-instruct', 'llama-3.1-70b-instruct',
+            'mistral-large', 'mistral-medium'
+        ];
+        
+        const modelNameLower = modelName.toLowerCase();
+        return imageModels.some(name => modelNameLower.includes(name.toLowerCase()));
+    };
+
+    // Función para formatear el precio
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 6
+        }).format(price);
+    };
+
+    // Función para renderizar el tooltip del modelo
+    const ModelTooltip = ({ model, isVisible }) => {
+        if (!isVisible) return null;
+
+        return (
+            <div className="model-tooltip">
+                <div className="tooltip-header">
+                    <h4>{model.name}</h4>
+                    <span className="provider-badge">{model.provider}</span>
+                </div>
+                
+                {model.description && (
+                    <div className="tooltip-description">
+                        <p>{model.description}</p>
+                    </div>
+                )}
+                
+                <div className="tooltip-pricing">
+                    <div className="price-item">
+                        <span className="price-label">Input:</span>
+                        <span className="price-value">{formatPrice(model.priceInput)}/token</span>
+                    </div>
+                    <div className="price-item">
+                        <span className="price-label">Output:</span>
+                        <span className="price-value">{formatPrice(model.priceOutput)}/token</span>
+                    </div>
+                </div>
+                
+                <div className="tooltip-features">
+                    <div className="feature-item">
+                        <FaImage className={`feature-icon ${supportsImages(model.name) ? 'supported' : 'not-supported'}`} />
+                        <span className={`feature-text ${supportsImages(model.name) ? 'supported' : 'not-supported'}`}>
+                            {supportsImages(model.name) ? 'Soporta imágenes' : 'No soporta imágenes'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className={`chat-view ${messages.length > 0 ? 'has-messages' : ''}`}>
             <div className="model-selector-container" ref={dropdownRef}>
@@ -283,8 +347,19 @@ const ChatView = ({
                                         key={model.id} 
                                         className={`model-option ${selectedModel && selectedModel.id === model.id ? 'selected' : ''}`}
                                         onClick={() => handleModelSelect(model)}
+                                        onMouseEnter={() => setHoveredModelId(model.id)}
+                                        onMouseLeave={() => setHoveredModelId(null)}
                                     >
-                                        {model.name}
+                                        <div className="model-option-content">
+                                            <span className="model-name">{model.name}</span>
+                                            {supportsImages(model.name) && (
+                                                <FaImage className="image-support-icon" title="Soporta imágenes" />
+                                            )}
+                                        </div>
+                                        <ModelTooltip 
+                                            model={model} 
+                                            isVisible={hoveredModelId === model.id}
+                                        />
                                     </div>
                                 ))}
                             </div>
