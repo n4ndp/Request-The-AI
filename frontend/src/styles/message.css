@@ -154,6 +154,38 @@
     }
 }
 
+/* Multimodal content styles */
+.multimodal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.text-content {
+    line-height: 1.4;
+}
+
+.image-content {
+    display: flex;
+    justify-content: center;
+    margin: 0.5rem 0;
+}
+
+.message-image {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.message-image:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.02);
+    cursor: zoom-in;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .message-wrapper {
@@ -167,5 +199,9 @@
     .ai-message-content,
     .user-message-content {
         max-width: 100%;
+    }
+    
+    .message-image {
+        max-height: 300px;
     }
 } 

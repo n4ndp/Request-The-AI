@@ -84,10 +84,11 @@ const ChatView = ({
         onInsufficientCredits();
     };
 
-    const handleSendMessage = async (text) => {
-        console.log('🚀 ChatView: Starting to send message:', text);
+    const handleSendMessage = async (text, multimodalContent = null) => {
+        console.log('🚀 ChatView: Starting to send message:', text || 'multimodal content');
         console.log('📊 ChatView: Current conversation:', currentConversation);
         console.log('📊 ChatView: Current messages count:', messages.length);
+        console.log('🖼️ ChatView: Multimodal content:', multimodalContent);
         
         // Verificar si el usuario tiene créditos suficientes antes de enviar
         if (userBalance <= 0) {
@@ -96,7 +97,16 @@ const ChatView = ({
             return;
         }
         
-        const userMessage = { text, sender: 'user' };
+        // Crear el mensaje de usuario con soporte para contenido multimodal
+        const userMessage = multimodalContent ? {
+            text: multimodalContent.find(part => part.type === 'text')?.text || 'Image message',
+            sender: 'user',
+            multimodalContent: multimodalContent
+        } : {
+            text,
+            sender: 'user'
+        };
+        
         setMessages(prevMessages => {
             const newMessages = [...prevMessages, userMessage];
             console.log('👤 ChatView: Added user message, new count:', newMessages.length);
@@ -121,13 +131,21 @@ const ChatView = ({
             // Si no hay conversación actual, se creará una automáticamente en el backend
             const conversationId = currentConversation?.id || null;
             
+            // Construir el request data basado en si es multimodal o no
+            const streamRequestData = multimodalContent ? {
+                multimodalContent: multimodalContent,
+                modelName: selectedModel.name,
+                conversationId: conversationId,
+                previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
+            } : {
+                content: text,
+                modelName: selectedModel.name,
+                conversationId: conversationId,
+                previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
+            };
+
             chatService.sendMessageStream(
-                {
-                    content: text,
-                    modelName: selectedModel.name,
-                    conversationId: conversationId,
-                    previousMessageOpenAiId: messages.length > 0 ? messages[messages.length - 1].openAiMessageId : null
-                },
+                streamRequestData,
                 // onChunk callback
                 (chunk) => {
                     if (chunk.type === 'start') {
@@ -279,7 +297,11 @@ const ChatView = ({
                 )}
             </div>
             
-            <ChatInput onSendMessage={handleSendMessage} modelProvider={modelProvider} />
+            <ChatInput 
+                onSendMessage={handleSendMessage} 
+                modelProvider={modelProvider}
+                selectedModel={selectedModel} 
+            />
             
             <InsufficientCreditsModal 
                 show={showInsufficientCreditsModal}

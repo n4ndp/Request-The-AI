@@ -19,9 +19,19 @@ import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import com.openai.models.chat.completions.ChatCompletionUserMessageParam;
 import com.openai.models.chat.completions.ChatCompletionAssistantMessageParam;
 import com.openai.core.http.StreamResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import com.requesttheai.backend.dto.ConversationDetailResponse;
 import com.requesttheai.backend.dto.ConversationSummaryResponse;
 import com.requesttheai.backend.dto.CreateConversationRequest;
+import com.requesttheai.backend.dto.MessageContent;
 import com.requesttheai.backend.dto.MessageResponse;
 import com.requesttheai.backend.dto.SendMessageRequest;
 import com.requesttheai.backend.dto.SendMessageResponse;
@@ -52,12 +62,14 @@ public class ChatService {
 	@Value("${openai.api.key}")
     private String apiKey;
 
-    private final ConversationRepository conversationRepository;
+    	private final ConversationRepository conversationRepository;
 	private final UserRepository userRepository;
 	private final MessageRepository messageRepository;
 	private final ModelRepository modelRepository;
 	private final UsageRepository usageRepository;
 	private final AccountRepository accountRepository;
+	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final RestTemplate restTemplate = new RestTemplate();
 
 	private OpenAIClient buildClient() {
         return OpenAIOkHttpClient.builder()
@@ -78,8 +90,160 @@ public class ChatService {
 		);
 	}
 
-	// NEW METHOD: Build message history for OpenAI to maintain conversation memory
-	private ChatCompletionCreateParams.Builder buildChatCompletionParams(Long conversationId, String currentMessage, String modelName) {
+	// Verifica si el modelo soporta visión (imágenes)
+	private boolean isVisionModel(String modelName) {
+		return modelName != null && (
+			modelName.equals("gpt-4o") ||
+			modelName.equals("gpt-4o-mini") ||
+			modelName.equals("gpt-4-vision-preview") ||
+			modelName.equals("gpt-4-turbo-vision-preview")
+		);
+	}
+
+	// Construye el mensaje de usuario apropiado según si es multimodal o no
+	private ChatCompletionUserMessageParam buildUserMessage(SendMessageRequest request) {
+		if (request.isMultimodal()) {
+			// Para contenido multimodal, usar el formato JSON que OpenAI espera
+			StringBuilder jsonContent = new StringBuilder();
+			jsonContent.append("[");
+			
+			boolean first = true;
+			for (MessageContent part : request.getMultimodalContent()) {
+				if (!first) {
+					jsonContent.append(",");
+				}
+				first = false;
+				
+				if ("text".equals(part.getType())) {
+					jsonContent.append("{")
+						.append("\"type\":\"text\",")
+						.append("\"text\":\"")
+						.append(part.getText().replace("\"", "\\\"").replace("\n", "\\n"))
+						.append("\"")
+						.append("}");
+				} else if ("image_url".equals(part.getType()) && part.getImageUrl() != null) {
+					jsonContent.append("{")
+						.append("\"type\":\"image_url\",")
+						.append("\"image_url\":{")
+						.append("\"url\":\"")
+						.append(part.getImageUrl().getUrl())
+						.append("\"");
+					
+					if (part.getImageUrl().getDetail() != null && !part.getImageUrl().getDetail().isEmpty()) {
+						jsonContent.append(",\"detail\":\"")
+							.append(part.getImageUrl().getDetail())
+							.append("\"");
+					}
+					
+					jsonContent.append("}")
+						.append("}");
+				}
+			}
+			
+			jsonContent.append("]");
+			
+			System.out.println("🖼️ Multimodal content JSON: " + jsonContent.toString());
+			
+			return ChatCompletionUserMessageParam.builder()
+				.content(jsonContent.toString())
+				.build();
+		} else {
+			// Para contenido de solo texto, usar el formato simple
+			return ChatCompletionUserMessageParam.builder()
+				.content(request.getContent())
+				.build();
+		}
+	}
+
+	// Método para hacer llamadas directas a OpenAI API con soporte multimodal
+	private String callOpenAIDirectly(SendMessageRequest request, List<Message> conversationHistory, String modelName) throws Exception {
+		// Construir la request JSON manualmente
+		ObjectNode requestJson = objectMapper.createObjectNode();
+		requestJson.put("model", modelName);
+		requestJson.put("max_tokens", 1000);
+		requestJson.put("temperature", 0.7);
+		
+		// Construir array de mensajes
+		ArrayNode messagesArray = objectMapper.createArrayNode();
+		
+		// Agregar historial de conversación
+		if (conversationHistory != null) {
+			for (Message msg : conversationHistory) {
+				ObjectNode messageObj = objectMapper.createObjectNode();
+				messageObj.put("role", msg.getMessageType() == MessageType.USER ? "user" : "assistant");
+				messageObj.put("content", msg.getContent());
+				messagesArray.add(messageObj);
+			}
+		}
+		
+		// Agregar mensaje actual
+		ObjectNode currentMessage = objectMapper.createObjectNode();
+		currentMessage.put("role", "user");
+		
+		if (request.isMultimodal()) {
+			// Para contenido multimodal, usar array de content parts
+			ArrayNode contentArray = objectMapper.createArrayNode();
+			
+			for (MessageContent part : request.getMultimodalContent()) {
+				ObjectNode contentPart = objectMapper.createObjectNode();
+				
+				if ("text".equals(part.getType())) {
+					contentPart.put("type", "text");
+					contentPart.put("text", part.getText());
+				} else if ("image_url".equals(part.getType()) && part.getImageUrl() != null) {
+					contentPart.put("type", "image_url");
+					ObjectNode imageUrl = objectMapper.createObjectNode();
+					imageUrl.put("url", part.getImageUrl().getUrl());
+					if (part.getImageUrl().getDetail() != null) {
+						imageUrl.put("detail", part.getImageUrl().getDetail());
+					}
+					contentPart.set("image_url", imageUrl);
+				}
+				
+				contentArray.add(contentPart);
+			}
+			
+			currentMessage.set("content", contentArray);
+		} else {
+			currentMessage.put("content", request.getContent());
+		}
+		
+		messagesArray.add(currentMessage);
+		requestJson.set("messages", messagesArray);
+		
+		// Configurar headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", "Bearer " + apiKey);
+		headers.set("Content-Type", "application/json");
+		
+		// Hacer la llamada
+		HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(requestJson), headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+			"https://api.openai.com/v1/chat/completions",
+			HttpMethod.POST,
+			entity,
+			String.class
+		);
+		
+		// Parsear respuesta
+		JsonNode responseJson = objectMapper.readTree(response.getBody());
+		JsonNode choices = responseJson.get("choices");
+		if (choices != null && choices.size() > 0) {
+			JsonNode firstChoice = choices.get(0);
+			JsonNode message = firstChoice.get("message");
+			if (message != null) {
+				JsonNode content = message.get("content");
+				if (content != null) {
+					return content.asText();
+				}
+			}
+		}
+		
+		return "No response from OpenAI";
+	}
+
+	// UPDATED METHOD: Build message history for OpenAI to maintain conversation memory with multimodal support
+	private ChatCompletionCreateParams.Builder buildChatCompletionParams(Long conversationId, SendMessageRequest request, String modelName) {
 		ChatCompletionCreateParams.Builder paramsBuilder = ChatCompletionCreateParams.builder()
 			.model(ChatModel.of(modelName));
 
@@ -106,11 +270,10 @@ public class ChatService {
 			System.out.println("🧠 No existing conversation, starting fresh");
 		}
 
-		// Add the current user message
-		paramsBuilder.addMessage(ChatCompletionUserMessageParam.builder()
-			.content(currentMessage)
-			.build());
-		System.out.println("💭 Added current USER message: " + currentMessage.substring(0, Math.min(50, currentMessage.length())) + "...");
+		// Add the current user message (with multimodal support)
+		paramsBuilder.addMessage(buildUserMessage(request));
+		String textContent = request.getTextContent();
+		System.out.println("💭 Added current USER message: " + textContent.substring(0, Math.min(50, textContent.length())) + "...");
 
 		return paramsBuilder;
 	}
@@ -223,12 +386,21 @@ public class ChatService {
 			throw new InsufficientCreditsException("You have no credits. Please add more to continue.");
 		}
 
+		// Validar que el modelo soporta visión si se envían imágenes
+		if (request.isMultimodal() && !isVisionModel(request.getModelName())) {
+			throw new RuntimeException("Model " + request.getModelName() + " does not support image processing. Please use a vision-capable model like gpt-4o or gpt-4o-mini.");
+		}
+
 		Model model = modelRepository.findByName(request.getModelName())
 				.orElseThrow(() -> new RuntimeException("Model not found"));
 
 		Conversation conversation;
 		if (request.getConversationId() == null) {
-			String title = request.getContent().trim();
+			String title = request.getTextContent().trim();
+			// Si no hay texto, usar título genérico para contenido multimodal
+			if (title.isEmpty()) {
+				title = "Image conversation";
+			}
 			String shortTitle = title.length() > 40 ? title.substring(0, 40) + "..." : title;
 			conversation = Conversation.builder()
 					.title(shortTitle)
@@ -240,26 +412,50 @@ public class ChatService {
 					.orElseThrow(() -> new RuntimeException("Conversation not found"));
 		}
 
-		// FIXED: Build params with conversation history BEFORE saving current message
-		ChatCompletionCreateParams params = buildChatCompletionParams(
-			conversation.getId(), 
-			request.getContent(), 
-			request.getModelName()
-		).build();
-
+		// Guardar el mensaje del usuario con el contenido apropiado
+		String contentToSave = request.isMultimodal() ? 
+			request.getTextContent() : // Para multimodal, guardamos solo el texto para compatibilidad
+			request.getContent();
+			
 		Message userMessage = Message.builder()
-            .content(request.getContent())
+            .content(contentToSave)
             .messageType(MessageType.USER)
             .conversation(conversation)
             .model(model)
             .build();
     	messageRepository.save(userMessage);
 
-		OpenAIClient client = buildClient();
-		ChatCompletion chatCompletion = client.chat().completions().create(params);
-
-		String aiText = chatCompletion.choices().get(0).message().content().orElse("(Sin respuesta)");
-		String openAiMessageId = chatCompletion.id();
+		String aiText;
+		String openAiMessageId = "manual-" + System.currentTimeMillis(); // ID temporal para llamadas directas
+		
+		try {
+			if (request.isMultimodal()) {
+				// Para contenido multimodal, usar llamada directa
+				List<Message> conversationHistory = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId());
+				// Remover el último mensaje que acabamos de agregar
+				conversationHistory = conversationHistory.subList(0, Math.max(0, conversationHistory.size() - 1));
+				
+				aiText = callOpenAIDirectly(request, conversationHistory, request.getModelName());
+				System.out.println("🖼️ Response from direct OpenAI call: " + aiText.substring(0, Math.min(100, aiText.length())) + "...");
+			} else {
+				// Para contenido de solo texto, usar el SDK normal
+				ChatCompletionCreateParams params = buildChatCompletionParams(
+					conversation.getId(), 
+					request, 
+					request.getModelName()
+				).build();
+				
+				OpenAIClient client = buildClient();
+				ChatCompletion chatCompletion = client.chat().completions().create(params);
+				
+				aiText = chatCompletion.choices().get(0).message().content().orElse("(Sin respuesta)");
+				openAiMessageId = chatCompletion.id();
+			}
+		} catch (Exception e) {
+			System.err.println("❌ Error calling OpenAI: " + e.getMessage());
+			e.printStackTrace();
+			aiText = "I apologize, but I'm having trouble processing your request. Please try again.";
+		}
 
 		Message aiMessage = Message.builder()
             .content(aiText)
@@ -270,7 +466,11 @@ public class ChatService {
             .build();
     	messageRepository.save(aiMessage);
 
-		int inputTokens = request.getContent().split("\\s+").length + 10;
+		int inputTokens = request.getTextContent().split("\\s+").length + 10;
+		// Para imágenes, agregamos tokens adicionales (aproximación)
+		if (request.isMultimodal()) {
+			inputTokens += request.getMultimodalContent().size() * 200; // ~200 tokens por imagen
+		}
 		int outputTokens = aiText.split("\\s+").length + 10;
 		int totalTokens = inputTokens + outputTokens;
 
@@ -322,7 +522,9 @@ public class ChatService {
 
 	public SseEmitter sendMessageStream(SendMessageRequest request, String username) {
 		System.out.println("🚀 Starting stream for user: " + username);
-		System.out.println("📝 Request data: " + request.getContent());
+		System.out.println("📝 Request data: " + (request.isMultimodal() ? 
+			"[Multimodal content with " + request.getMultimodalContent().size() + " parts]" : 
+			request.getContent()));
 		System.out.println("🤖 Model: " + request.getModelName());
 		
 		SseEmitter emitter = new SseEmitter(0L); // No timeout
@@ -349,13 +551,29 @@ public class ChatService {
 				}
 				System.out.println("💰 User has credits: " + userAccount.getBalance());
 
+				// Validar que el modelo soporta visión si se envían imágenes
+				if (request.isMultimodal() && !isVisionModel(request.getModelName())) {
+					System.out.println("❌ Model " + request.getModelName() + " does not support vision");
+					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+							.type("error")
+							.error("Model " + request.getModelName() + " does not support image processing. Please use a vision-capable model like gpt-4o or gpt-4o-mini.")
+							.build();
+					emitter.send(SseEmitter.event().data(errorChunk));
+					emitter.complete();
+					return;
+				}
+
 				Model model = modelRepository.findByName(request.getModelName())
 						.orElseThrow(() -> new RuntimeException("Model not found"));
 				System.out.println("🤖 Model found: " + model.getName());
 
 				Conversation conversation;
 				if (request.getConversationId() == null) {
-					String title = request.getContent().trim();
+					String title = request.getTextContent().trim();
+					// Si no hay texto, usar título genérico para contenido multimodal
+					if (title.isEmpty()) {
+						title = "Image conversation";
+					}
 					String shortTitle = title.length() > 40 ? title.substring(0, 40) + "..." : title;
 					conversation = Conversation.builder()
 							.title(shortTitle)
@@ -369,16 +587,13 @@ public class ChatService {
 					System.out.println("💬 Using existing conversation: " + conversation.getId());
 				}
 
-				// FIXED: Load conversation history BEFORE saving current message
-				ChatCompletionCreateParams params = buildChatCompletionParams(
-					conversation.getId(), 
-					request.getContent(), 
-					request.getModelName()
-				).build();
-				System.out.println("🔧 OpenAI params created with conversation history for model: " + request.getModelName());
-
+				// Guardar el mensaje del usuario con el contenido apropiado
+				String contentToSave = request.isMultimodal() ? 
+					request.getTextContent() : // Para multimodal, guardamos solo el texto para compatibilidad
+					request.getContent();
+					
 				Message userMessage = Message.builder()
-						.content(request.getContent())
+						.content(contentToSave)
 						.messageType(MessageType.USER)
 						.conversation(conversation)
 						.model(model)
@@ -395,64 +610,95 @@ public class ChatService {
 				System.out.println("📤 Sending start event: " + startChunk);
 				emitter.send(SseEmitter.event().data(startChunk));
 
-				// Validate model name before making request
-				String modelName = request.getModelName();
-				if (!isValidOpenAIModel(modelName)) {
-					System.err.println("❌ Invalid OpenAI model name: " + modelName);
-					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
-							.type("error")
-							.error("Invalid model name: " + modelName + ". Please use a valid OpenAI model.")
-							.build();
-					emitter.send(SseEmitter.event().data(errorChunk));
-					emitter.complete();
-					return;
-				}
-
-				OpenAIClient client = buildClient();
-				StringBuilder aiResponseBuilder = new StringBuilder();
-				System.out.println("🌐 Starting OpenAI streaming request...");
-
-				try (StreamResponse<ChatCompletionChunk> streamResponse = client.chat().completions().createStreaming(params)) {
-					System.out.println("✅ OpenAI stream created successfully");
-					
-					streamResponse.stream().forEach(chunk -> {
-						System.out.println("📦 Received chunk from OpenAI: " + chunk);
+				String aiText;
+				
+				try {
+					if (request.isMultimodal()) {
+						// Para contenido multimodal, usar llamada directa (sin streaming por simplicidad)
+						System.out.println("🖼️ Processing multimodal content...");
+						List<Message> conversationHistory = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId());
+						// Remover el último mensaje que acabamos de agregar
+						conversationHistory = conversationHistory.subList(0, Math.max(0, conversationHistory.size() - 1));
 						
-						if (!chunk.choices().isEmpty()) {
-							String content = chunk.choices().get(0).delta().content().orElse("");
-							System.out.println("📝 Content from chunk: '" + content + "'");
-							
-							if (!content.isEmpty()) {
-								aiResponseBuilder.append(content);
-								try {
-									StreamMessageChunk contentChunk = StreamMessageChunk.builder()
-											.type("content")
-											.content(content)
-											.build();
-									System.out.println("📤 Sending content chunk: " + contentChunk);
-									emitter.send(SseEmitter.event().data(contentChunk));
-								} catch (Exception e) {
-									System.err.println("❌ Error sending content chunk: " + e.getMessage());
-									throw new RuntimeException("Error sending streaming content", e);
-								}
-							}
-						} else {
-							System.out.println("⚠️ Chunk has no choices");
+						aiText = callOpenAIDirectly(request, conversationHistory, request.getModelName());
+						System.out.println("🖼️ Response from direct OpenAI call: " + aiText.substring(0, Math.min(100, aiText.length())) + "...");
+						
+						// Enviar la respuesta completa como un solo chunk
+						StreamMessageChunk contentChunk = StreamMessageChunk.builder()
+								.type("content")
+								.content(aiText)
+								.build();
+						emitter.send(SseEmitter.event().data(contentChunk));
+						
+					} else {
+						// Para contenido de solo texto, usar streaming normal
+						ChatCompletionCreateParams params = buildChatCompletionParams(
+							conversation.getId(), 
+							request, 
+							request.getModelName()
+						).build();
+						System.out.println("🔧 OpenAI params created with conversation history for model: " + request.getModelName());
+
+						// Validate model name before making request
+						String modelName = request.getModelName();
+						if (!isValidOpenAIModel(modelName)) {
+							System.err.println("❌ Invalid OpenAI model name: " + modelName);
+							StreamMessageChunk errorChunk = StreamMessageChunk.builder()
+									.type("error")
+									.error("Invalid model name: " + modelName + ". Please use a valid OpenAI model.")
+									.build();
+							emitter.send(SseEmitter.event().data(errorChunk));
+							emitter.complete();
+							return;
 						}
-					});
-				} catch (Exception openAiException) {
-					System.err.println("💥 OpenAI API Error: " + openAiException.getMessage());
-					openAiException.printStackTrace();
+
+						OpenAIClient client = buildClient();
+						StringBuilder aiResponseBuilder = new StringBuilder();
+						System.out.println("🌐 Starting OpenAI streaming request...");
+
+						try (StreamResponse<ChatCompletionChunk> streamResponse = client.chat().completions().createStreaming(params)) {
+							System.out.println("✅ OpenAI stream created successfully");
+							
+							streamResponse.stream().forEach(chunk -> {
+								System.out.println("📦 Received chunk from OpenAI: " + chunk);
+								
+								if (!chunk.choices().isEmpty()) {
+									String content = chunk.choices().get(0).delta().content().orElse("");
+									System.out.println("📝 Content from chunk: '" + content + "'");
+									
+									if (!content.isEmpty()) {
+										aiResponseBuilder.append(content);
+										try {
+											StreamMessageChunk contentChunk = StreamMessageChunk.builder()
+													.type("content")
+													.content(content)
+													.build();
+											System.out.println("📤 Sending content chunk: " + contentChunk);
+											emitter.send(SseEmitter.event().data(contentChunk));
+										} catch (Exception e) {
+											System.err.println("❌ Error sending content chunk: " + e.getMessage());
+											throw new RuntimeException("Error sending streaming content", e);
+										}
+									}
+								} else {
+									System.out.println("⚠️ Chunk has no choices");
+								}
+							});
+						}
+						
+						aiText = aiResponseBuilder.toString();
+					}
+				} catch (Exception e) {
+					System.err.println("❌ Error in AI processing: " + e.getMessage());
+					e.printStackTrace();
 					StreamMessageChunk errorChunk = StreamMessageChunk.builder()
 							.type("error")
-							.error("OpenAI API Error: " + openAiException.getMessage())
+							.error("Error processing request: " + e.getMessage())
 							.build();
 					emitter.send(SseEmitter.event().data(errorChunk));
 					emitter.complete();
 					return;
 				}
-
-				String aiText = aiResponseBuilder.toString();
 				System.out.println("🤖 Complete AI response: '" + aiText + "'");
 				
 				if (aiText.isEmpty()) {
@@ -471,7 +717,11 @@ public class ChatService {
 				System.out.println("✅ AI message saved: " + aiMessage.getId());
 
 				// Calculate costs
-				int inputTokens = request.getContent().split("\\s+").length + 10;
+				int inputTokens = request.getTextContent().split("\\s+").length + 10;
+				// Para imágenes, agregamos tokens adicionales (aproximación)
+				if (request.isMultimodal()) {
+					inputTokens += request.getMultimodalContent().size() * 200; // ~200 tokens por imagen
+				}
 				int outputTokens = aiText.split("\\s+").length + 10;
 				int totalTokens = inputTokens + outputTokens;
 				System.out.println("💰 Token calculation - Input: " + inputTokens + ", Output: " + outputTokens + ", Total: " + totalTokens);

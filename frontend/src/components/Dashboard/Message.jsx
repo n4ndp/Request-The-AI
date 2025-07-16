@@ -3,7 +3,7 @@ import { FaBrain, FaWandMagicSparkles } from 'react-icons/fa6';
 import '../../styles/message.css';
 
 const Message = ({ message }) => {
-    const { text, sender, provider, isStreaming, isError } = message;
+    const { text, sender, provider, isStreaming, isError, multimodalContent } = message;
     const isUser = sender === 'user';
     
     // Determine the icon based on the provider (for AI messages)
@@ -36,12 +36,42 @@ const Message = ({ message }) => {
         </div>
     );
 
+    // Render multimodal content for user messages
+    const renderMultimodalContent = () => {
+        if (!multimodalContent) return null;
+
+        return (
+            <div className="multimodal-content">
+                {multimodalContent.map((part, index) => {
+                    if (part.type === 'text') {
+                        return (
+                            <div key={index} className="text-content">
+                                {part.text}
+                            </div>
+                        );
+                    } else if (part.type === 'image_url') {
+                        return (
+                            <div key={index} className="image-content">
+                                <img 
+                                    src={part.imageUrl.url} 
+                                    alt="User uploaded image"
+                                    className="message-image"
+                                />
+                            </div>
+                        );
+                    }
+                    return null;
+                })}
+            </div>
+        );
+    };
+
     if (isUser) {
         return (
             <div className="message-wrapper user-message">
                 <div className="user-message-content">
                     <div className="user-message-bubble">
-                        {text}
+                        {multimodalContent ? renderMultimodalContent() : text}
                     </div>
                 </div>
             </div>
