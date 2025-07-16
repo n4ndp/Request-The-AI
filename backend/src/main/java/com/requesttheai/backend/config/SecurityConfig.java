@@ -36,7 +36,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(authRequest -> authRequest
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/ai/**").permitAll()
-                .requestMatchers("/api/chat/**").permitAll() // solo para pruebas
+                // Chat endpoints
+                .requestMatchers(HttpMethod.GET, "/api/chat/conversations").hasAnyAuthority("USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/chat/conversations/*").hasAnyAuthority("USER", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/chat/conversations/*").hasAnyAuthority("USER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/chat/**").hasAnyAuthority("USER", "ADMIN")
                 // Users
                 .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users").hasAuthority("ADMIN")

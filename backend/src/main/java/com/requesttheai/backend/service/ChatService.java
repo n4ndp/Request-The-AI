@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
@@ -156,6 +157,23 @@ public class ChatService {
 				.endedAt(conversation.getEndedAt())
 				.messages(messageResponses)
 				.build();
+	}
+
+	@Transactional
+	public void deleteConversation(Long conversationId, String username) {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+		Conversation conversation = conversationRepository.findByIdAndUserIdWithMessages(conversationId, user.getId())
+				.orElseThrow(() -> new RuntimeException("Conversation not found or access denied"));
+
+		// Manually delete usage records associated with each message
+		for (Message message : conversation.getMessages()) {
+			usageRepository.setNullMessageByMessageId(message.getId());
+		}
+
+		// Now, deleting the conversation should cascade to messages without integrity issues
+		conversationRepository.delete(conversation);
 	}
 
     public ConversationSummaryResponse createConversation(CreateConversationRequest request, String username) {

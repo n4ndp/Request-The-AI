@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/sidebar.css';
 import { FaRegCommentAlt } from 'react-icons/fa';
 import { FaPlus, FaPowerOff, FaWandMagicSparkles, FaSun, FaTrash, FaAngleLeft, FaDiamond, FaClockRotateLeft, FaChevronDown, FaUser } from 'react-icons/fa6';
+import chatService from '../../services/chatService';
+import Swal from 'sweetalert2';
 import UserModal from './UserModal';
 import RechargeHistoryModal from './Recharge/RechargeHistoryModal';
 import AddCreditsModal from './Recharge/AddCreditsModal';
@@ -17,7 +19,8 @@ const Sidebar = ({
     currentConversation,
     onSelectConversation,
     onNewChat,
-    loadingConversations
+    loadingConversations,
+    onConversationDeleted
 }) => {
     const navigate = useNavigate();
     const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
@@ -72,6 +75,58 @@ const Sidebar = ({
 
     const handleConversationClick = (conversation) => {
         onSelectConversation(conversation);
+    };
+
+    const handleDeleteConversation = async (e, conversation) => {
+        e.stopPropagation(); // Prevent triggering conversation selection
+        
+        const result = await Swal.fire({
+            title: '¿Eliminar conversación?',
+            text: `¿Estás seguro de que quieres eliminar "${conversation.title}"? Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            background: '#2a2a2a',
+            color: '#ffffff'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await chatService.deleteConversation(conversation.id);
+                
+                // If the deleted conversation was the current one, reset to new chat
+                if (currentConversation?.id === conversation.id) {
+                    onNewChat();
+                }
+                
+                // Notify parent component to refresh conversation list
+                if (onConversationDeleted) {
+                    onConversationDeleted(conversation.id);
+                }
+
+                Swal.fire({
+                    title: '¡Eliminada!',
+                    text: 'La conversación ha sido eliminada.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: '#2a2a2a',
+                    color: '#ffffff'
+                });
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo eliminar la conversación. Inténtalo de nuevo.',
+                    icon: 'error',
+                    background: '#2a2a2a',
+                    color: '#ffffff'
+                });
+            }
+        }
     };
 
     // Determinar el tipo de cuenta basado en el balance
@@ -200,19 +255,29 @@ const Sidebar = ({
                     )}
                     
                     {!loadingConversations && conversations.map((conversation) => (
-                        <button
-                            key={conversation.id}
-                            className={`history-item ${currentConversation?.id === conversation.id ? 'active' : ''}`}
-                            onClick={() => handleConversationClick(conversation)}
-                        >
-                            <FaRegCommentAlt />
+                        <div key={conversation.id} className="history-item-container">
+                            <button
+                                className={`history-item ${currentConversation?.id === conversation.id ? 'active' : ''}`}
+                                onClick={() => handleConversationClick(conversation)}
+                            >
+                                <FaRegCommentAlt />
+                                {isOpen && (
+                                    <div className="conversation-info">
+                                        <span className="conversation-title">{conversation.title}</span>
+                                        <span className="conversation-date">{formatDate(conversation.createdAt)}</span>
+                                    </div>
+                                )}
+                            </button>
                             {isOpen && (
-                                <div className="conversation-info">
-                                    <span className="conversation-title">{conversation.title}</span>
-                                    <span className="conversation-date">{formatDate(conversation.createdAt)}</span>
-                                </div>
+                                <button
+                                    className="delete-conversation-btn"
+                                    onClick={(e) => handleDeleteConversation(e, conversation)}
+                                    title="Eliminar conversación"
+                                >
+                                    <FaTrash />
+                                </button>
                             )}
-                        </button>
+                        </div>
                     ))}
                 </nav>
             </div>

@@ -150,6 +150,16 @@ const chatService = {
             console.error('💥 Streaming error:', error);
             onError && onError(error);
         });
+    },
+
+    deleteConversation: async (conversationId) => {
+        try {
+            await httpClient.delete(`/chat/conversations/${conversationId}`);
+            return true;
+        } catch (error) {
+            console.error('Error deleting conversation:', error);
+            throw new Error(error.response?.data?.message || 'Error al eliminar la conversación');
+        }
     }
 };
 

@@ -141,6 +141,18 @@ const Chat = () => {
         }
     };
 
+    // Función para manejar la eliminación de conversaciones
+    const handleConversationDeleted = async (deletedConversationId) => {
+        // Recargar la lista de conversaciones
+        await fetchConversations();
+        
+        // Si la conversación eliminada era la activa, limpiar el estado
+        if (currentConversation?.id === deletedConversationId) {
+            setCurrentConversation(null);
+            setConversationMessages([]);
+        }
+    };
+
     // Función para manejar cuando se envía un mensaje en una nueva conversación
     const handleConversationCreated = (newConversation) => {
         // Refrescar la lista de conversaciones para mostrar la nueva en el sidebar
@@ -160,8 +172,8 @@ const Chat = () => {
 
     return (
         <div className={`chat-container ${modelProvider}-theme`}>
-            <Sidebar 
-                isOpen={isSidebarOpen} 
+                        <Sidebar 
+                isOpen={isSidebarOpen}
                 setIsOpen={setSidebarOpen}
                 user={user}
                 onUserBalanceUpdate={updateUserBalance}
@@ -171,6 +183,7 @@ const Chat = () => {
                 onSelectConversation={handleSelectConversation}
                 onNewChat={handleNewChat}
                 loadingConversations={loadingConversations}
+                onConversationDeleted={handleConversationDeleted}
             />
             <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
                 <ChatView 

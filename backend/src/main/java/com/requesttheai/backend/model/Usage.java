@@ -69,9 +69,8 @@ public class Usage {
     @Column(nullable = false)
     private Integer tokens;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "message_id", nullable = false)
+    @JoinColumn(name = "message_id")
     private Message message;
 
     @NotNull

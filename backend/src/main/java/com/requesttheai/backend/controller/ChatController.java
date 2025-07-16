@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +46,15 @@ public class ChatController {
             @PathVariable Long conversationId,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(chatService.getConversationDetail(conversationId, userDetails.getUsername()));
+    }
+
+    @DeleteMapping("/conversations/{conversationId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> deleteConversation(
+            @PathVariable Long conversationId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        chatService.deleteConversation(conversationId, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/conversation")
